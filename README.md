@@ -13,7 +13,7 @@ The PSU carrier PCB is a KiCad 9 project with a PCBWay order pack.
 ```
 make setup           # once
 make cad check       # CAD -> build/, all checks must pass
-make print           # ElegooSlicer projects -> print/*.3mf  (set ELEGOO_SLICER)
+make print           # OrcaSlicer projects -> print/*.3mf  (set SLICER)
 make pcb             # KiCad ERC/DRC + PCBWay pack -> pcb/fab/
 ```
 Section renders: `docs/renders/`. First-pass renders: `reference/v0.1-openscad/renders/`.

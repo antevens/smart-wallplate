@@ -13,7 +13,7 @@ cad:            ## STEP/STL of insert + trim, print-oriented STLs (build/print),
 check:          ## geometry, barrier, PSU fit and printability checks - must pass
 	cd $(CAD) && $(PY) checks.py
 
-print:          ## ElegooSlicer projects (print/*.3mf) + G-code (build/print/gcode); needs ELEGOO_SLICER
+print:          ## OrcaSlicer projects (print/*.3mf) + G-code (build/print/gcode); SLICER=OrcaSlicer AppImage
 	$(PY) print/slice.py
 
 pcb:            ## KiCad project, ERC + DRC, PCBWay fab pack, cad/vendor/psu_carrier.step

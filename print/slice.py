@@ -1,14 +1,16 @@
-"""Build ElegooSlicer projects (.3mf) and G-code for the Elegoo Centauri Carbon 2.
+"""Build slicer projects (.3mf) and G-code for the Elegoo Centauri Carbon 2.
 
     python print/slice.py            (or: make print)
 
-Needs ElegooSlicer (tested 1.5.3.5, Linux AppImage). Point ELEGOO_SLICER at the
-AppImage or at an extracted squashfs-root/AppRun. Headless machines need xvfb-run.
+Works with OrcaSlicer (tested 2.4.2) or ElegooSlicer (tested 1.5.3.5, an OrcaSlicer
+fork); both ship the same CC2 profiles. Point SLICER at the AppImage or an extracted
+squashfs-root/AppRun (ORCA_SLICER / ELEGOO_SLICER also work), or put orca-slicer /
+elegoo-slicer on PATH. Headless machines need xvfb-run.
 
 Settings = stock CC2 system profiles + the small override sets below (also written
 to print/profiles/*.json so they can be imported into the GUI as user presets).
 Outputs:
-  print/<job>.3mf                 project: model + settings, opens in ElegooSlicer
+  print/<job>.3mf                 project: model + settings, opens in OrcaSlicer/ElegooSlicer
   build/print/gcode/<job>.gcode   sliced, for checking time/material (or printing)
 """
 import json, os, re, shutil, subprocess, sys, tempfile
@@ -42,11 +44,19 @@ JOBS = {
 
 
 def slicer():
-    cands = [os.environ.get("ELEGOO_SLICER", ""), shutil.which("elegoo-slicer") or "", shutil.which("ElegooSlicer") or ""]
+    cands = [os.environ.get(v, "") for v in ("SLICER", "ORCA_SLICER", "ELEGOO_SLICER")]
+    cands += [shutil.which(n) or "" for n in ("orca-slicer", "OrcaSlicer", "elegoo-slicer", "ElegooSlicer")]
     for c in cands:
         if c and Path(c).exists():
             return Path(c)
-    sys.exit("ElegooSlicer not found: set ELEGOO_SLICER to the AppImage or squashfs-root/AppRun")
+    sys.exit("No slicer found: set SLICER to an OrcaSlicer/ElegooSlicer AppImage or squashfs-root/AppRun")
+
+
+def version(run):
+    with tempfile.TemporaryDirectory() as t:  # the CLI drops result.json in its cwd
+        r = subprocess.run(run + ["--help"], capture_output=True, text=True, cwd=t)
+    m = re.search(r"^(\S+Slicer-[\d.]+):", r.stdout + r.stderr, re.M)
+    return m.group(1) if m else "unknown slicer"
 
 
 def profiles_dir(exe):
@@ -86,6 +96,8 @@ def main():
     exe = slicer()
     idx = index(profiles_dir(exe))
     run = ["xvfb-run", "-a", str(exe)] if not os.environ.get("DISPLAY") and shutil.which("xvfb-run") else [str(exe)]
+    os.environ.setdefault("APPIMAGE_EXTRACT_AND_RUN", "1")  # AppImages without FUSE
+    print("slicer:", version(run), f"({exe})")
     gdir = ROOT / "build" / "print" / "gcode"
     gdir.mkdir(parents=True, exist_ok=True)
     (ROOT / "print" / "profiles").mkdir(exist_ok=True)

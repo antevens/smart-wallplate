@@ -2,24 +2,26 @@
 
 Printer: **Elegoo Centauri Carbon 2 Combo** (256 × 256 × 256 mm, enclosed, hardened
 0.4 mm nozzle up to 350 °C, bed up to 110 °C, CANVAS 4-filament hub). Slicer:
-**ElegooSlicer** (tested 1.5.3.5; OrcaSlicer-based). The CANVAS hub isn't needed:
+**OrcaSlicer** (tested 2.4.2, Linux AppImage). ElegooSlicer (an OrcaSlicer fork, tested
+1.5.3.5) ships the same CC2 profiles and opens the same projects. The CANVAS hub isn't needed:
 every part is single-material.
 
 ## Files
-| File | Part(s) | Filament | Est. time / mass (ElegooSlicer 1.5.3.5) |
+| File | Part(s) | Filament | Est. time / mass (OrcaSlicer 2.4.2) |
 |------|---------|----------|------------------------------------------|
-| `print/coupons_PETG.3mf` | pocket+well coupon, MSR-2 bay coupon, rocker panel ladder | PETG | 1 h 46 m / 45 g |
-| `print/insert_PETG_testfit.3mf` | box insert (fit check only, **not for mains**) | PETG | 2 h 25 m / 63 g |
-| `print/trim_PETG.3mf` | trim plate | PETG (ASA if in sun) | 58 m / 33 g |
-| `print/insert_PC-FR.3mf` | box insert, **final** | Elegoo PC-FR (UL94 V-0) | 2 h 14 m / 56 g |
+| `print/coupons_PETG.3mf` | pocket+well coupon, MSR-2 bay coupon, rocker panel ladder | PETG | 1 h 45 m / 45 g |
+| `print/insert_PETG_testfit.3mf` | box insert (fit check only, **not for mains**) | PETG | 2 h 24 m / 62 g |
+| `print/trim_PETG.3mf` | trim plate | PETG (ASA if in sun) | 57 m / 32 g |
+| `print/insert_PC-FR.3mf` | box insert, **final** | Elegoo PC-FR (UL94 V-0) | 2 h 13 m / 55 g |
 
-Open a `.3mf` in ElegooSlicer, check the plate, slice, send. The projects carry the
+Open a `.3mf` in OrcaSlicer, check the plate, slice, send. The projects carry the
 printer (CC2 0.4 nozzle), filament and process settings; the parts are already
 oriented. `print/profiles/*.json` hold just the process overrides, importable as
-user presets. Thumbnails are missing (generated headless); ElegooSlicer redraws them.
+user presets. Thumbnails are missing (generated headless); the slicer redraws them.
 
-Regenerate after any CAD change: `make cad check print` (needs `ELEGOO_SLICER` set
-to the AppImage; headless machines need `xvfb-run`). Sliced G-code for checking
+Regenerate after any CAD change: `make cad check print` (set `SLICER` to the
+OrcaSlicer or ElegooSlicer AppImage, or put `orca-slicer` on PATH; headless machines
+need `xvfb-run`). Sliced G-code for checking
 time/material lands in `build/print/gcode/`.
 
 ## Order of work
