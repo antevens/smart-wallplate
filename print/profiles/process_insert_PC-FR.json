@@ -1,0 +1,17 @@
+{
+  "type": "process",
+  "name": "smart-wallplate insert_PC-FR",
+  "inherits": "0.20mm Strength @Elegoo CC2 0.4 nozzle",
+  "from": "User",
+  "instantiation": "true",
+  "wall_loops": "6",
+  "top_shell_layers": "6",
+  "bottom_shell_layers": "6",
+  "sparse_infill_density": "40%",
+  "sparse_infill_pattern": "gyroid",
+  "enable_support": "0",
+  "brim_type": "outer_only",
+  "brim_width": "5",
+  "seam_position": "back",
+  "detect_thin_wall": "1"
+}
