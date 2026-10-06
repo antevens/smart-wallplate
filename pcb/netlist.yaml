@@ -1,0 +1,14 @@
+# PSU carrier netlist (source of truth for the schematic)
+components:
+  J1:  {value: "TB 2p 5.08mm", role: "mains in: 1=L' (load side of rocker), 2=N", rating: ">=300V"}
+  F1:  {value: "fuse T (time-lag) - rating per IRM-03 datasheet", package: TR5}
+  RV1: {value: "MOV 275VAC", example: "TDK S07K275", package: "disc 7mm P7.5"}
+  PS1: {value: "Mean Well IRM-03-5", pins: [AC_L, AC_N, +Vo, -Vo]}
+  C1:  {value: "optional output cap - per IRM-03 datasheet", optional: true}
+  J2:  {value: "JST-XH 2p", role: "1=+5V, 2=GND to MSR-2"}
+nets:
+  L_IN:  [J1.1, F1.1]                 # netclass Primary
+  L_F:   [F1.2, RV1.1, PS1.AC_L]      # netclass Primary
+  N:     [J1.2, RV1.2, PS1.AC_N]      # netclass Primary
+  +5V:   [PS1.+Vo, C1.1, J2.1]        # netclass Secondary
+  GND:   [PS1.-Vo, C1.2, J2.2]        # netclass Secondary
