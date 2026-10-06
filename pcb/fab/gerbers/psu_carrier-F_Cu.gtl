@@ -1,0 +1,138 @@
+G04 #@! TF.GenerationSoftware,KiCad,Pcbnew,9.0.9-9.0.9~ubuntu24.04.1*
+G04 #@! TF.CreationDate,2026-10-06T21:28:54+00:00*
+G04 #@! TF.ProjectId,psu_carrier,7073755f-6361-4727-9269-65722e6b6963,rev?*
+G04 #@! TF.SameCoordinates,Original*
+G04 #@! TF.FileFunction,Copper,L1,Top*
+G04 #@! TF.FilePolarity,Positive*
+%FSLAX46Y46*%
+G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
+G04 Created by KiCad (PCBNEW 9.0.9-9.0.9~ubuntu24.04.1) date 2026-10-06 21:28:54*
+%MOMM*%
+%LPD*%
+G01*
+G04 APERTURE LIST*
+G04 Aperture macros list*
+%AMRoundRect*
+0 Rectangle with rounded corners*
+0 $1 Rounding radius*
+0 $2 $3 $4 $5 $6 $7 $8 $9 X,Y pos of 4 corners*
+0 Add a 4 corners polygon primitive as box body*
+4,1,4,$2,$3,$4,$5,$6,$7,$8,$9,$2,$3,0*
+0 Add four circle primitives for the rounded corners*
+1,1,$1+$1,$2,$3*
+1,1,$1+$1,$4,$5*
+1,1,$1+$1,$6,$7*
+1,1,$1+$1,$8,$9*
+0 Add four rect primitives between the rounded corners*
+20,1,$1+$1,$2,$3,$4,$5,0*
+20,1,$1+$1,$4,$5,$6,$7,0*
+20,1,$1+$1,$6,$7,$8,$9,0*
+20,1,$1+$1,$8,$9,$2,$3,0*%
+G04 Aperture macros list end*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD10RoundRect,0.230770X0.969230X0.969230X-0.969230X0.969230X-0.969230X-0.969230X0.969230X-0.969230X0*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD11C,2.400000*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD12C,1.600000*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD13C,2.000000*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD14RoundRect,0.250000X0.600000X0.750000X-0.600000X0.750000X-0.600000X-0.750000X0.600000X-0.750000X0*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD15O,1.700000X2.000000*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD16RoundRect,0.250000X0.550000X0.550000X-0.550000X0.550000X-0.550000X-0.550000X0.550000X-0.550000X0*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD17R,2.000000X2.300000*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD18C,2.300000*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,Conductor*
+%ADD19C,1.200000*%
+G04 #@! TD*
+G04 APERTURE END LIST*
+D10*
+G04 #@! TO.P,J1,1*
+G04 #@! TO.N,/L_IN*
+X105080000Y-85000000D03*
+D11*
+G04 #@! TO.P,J1,2*
+G04 #@! TO.N,/N*
+X100000000Y-85000000D03*
+G04 #@! TD*
+D12*
+G04 #@! TO.P,RV1,1*
+G04 #@! TO.N,/L_F*
+X113500000Y-95500000D03*
+G04 #@! TO.P,RV1,2*
+G04 #@! TO.N,/N*
+X108500000Y-93400000D03*
+G04 #@! TD*
+D13*
+G04 #@! TO.P,F1,1*
+G04 #@! TO.N,/L_IN*
+X114000000Y-83000000D03*
+G04 #@! TO.P,F1,2*
+G04 #@! TO.N,/L_F*
+X114000000Y-88080000D03*
+G04 #@! TD*
+D14*
+G04 #@! TO.P,J2,1*
+G04 #@! TO.N,+5V*
+X88000000Y-83000000D03*
+D15*
+G04 #@! TO.P,J2,2*
+G04 #@! TO.N,GND*
+X85500000Y-83000000D03*
+G04 #@! TD*
+D16*
+G04 #@! TO.P,C1,1*
+G04 #@! TO.N,+5V*
+X88000000Y-91000000D03*
+D12*
+G04 #@! TO.P,C1,2*
+G04 #@! TO.N,GND*
+X86000000Y-91000000D03*
+G04 #@! TD*
+D17*
+G04 #@! TO.P,PS1,1*
+G04 #@! TO.N,/L_F*
+X115240000Y-100610000D03*
+D18*
+G04 #@! TO.P,PS1,3*
+G04 #@! TO.N,/N*
+X110160000Y-100610000D03*
+G04 #@! TO.P,PS1,5*
+G04 #@! TO.N,unconnected-(PS1-NC-Pad5)*
+X84760000Y-100610000D03*
+G04 #@! TO.P,PS1,14*
+G04 #@! TO.N,GND*
+X84760000Y-118390000D03*
+G04 #@! TO.P,PS1,16*
+G04 #@! TO.N,+5V*
+X89840000Y-118390000D03*
+G04 #@! TD*
+D19*
+G04 #@! TO.N,/L_IN*
+X105080000Y-85000000D02*
+X114000000Y-83000000D01*
+G04 #@! TO.N,/L_F*
+X113500000Y-95500000D02*
+X115240000Y-97200000D01*
+X114000000Y-88080000D02*
+X113500000Y-88600000D01*
+X115240000Y-97200000D02*
+X115240000Y-100610000D01*
+X113500000Y-88600000D02*
+X113500000Y-95500000D01*
+G04 #@! TD*
+M02*

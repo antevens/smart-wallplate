@@ -1,0 +1,7 @@
+Ref,Val,Package,PosX,PosY,Rot,Side
+"C1","47uF 16V","CP_Radial_D5.0mm_P2.00mm",-12.000000,9.000000,180.000000,top
+"F1","T1A 250V","Fuse_Littelfuse_372_D8.50mm",14.000000,17.000000,-90.000000,top
+"J1","MKDS 1,5/2-5,08","TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal_Pad2.4mm",5.080000,15.000000,180.000000,top
+"J2","5V out","JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical",-12.000000,17.000000,180.000000,top
+"PS1","IRM-03-5","Converter_ACDC_MeanWell_IRM-03-xx_THT",15.240000,-0.610000,-90.000000,top
+"RV1","S07K275","RV_Disc_D7mm_W4.5mm_P5mm",13.500000,4.500000,180.000000,top
