@@ -6,12 +6,23 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 T="$ROOT/pcb/tools"; K="$ROOT/pcb/kicad"; F="$ROOT/pcb/fab"
 PY3D="${PY3D:-$ROOT/.venv/bin/python}"
 REV=v0.2
+
+# gen_pcb.py needs KiCad's own Python (the one that can `import pcbnew`), which an
+# active virtualenv hides. KICAD_PYTHON overrides the search.
+KIPY=""
+for p in "${KICAD_PYTHON:-}" /usr/bin/python3 /usr/local/bin/python3 python3 \
+         /Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/Current/bin/python3; do
+  [ -n "$p" ] && command -v "$p" >/dev/null 2>&1 && "$p" -c "import pcbnew" >/dev/null 2>&1 && { KIPY="$p"; break; }
+done
+[ -n "$KIPY" ] || { echo "no Python with KiCad's pcbnew module found; set KICAD_PYTHON" >&2; exit 1; }
+PY=python3; command -v "$PY" >/dev/null || PY="$KIPY"
+
 cd "$T"
 "$PY3D" gen_3d.py
-python3 gen_libs.py
-python3 gen_project.py
-python3 gen_schematic.py
-python3 gen_pcb.py
+"$PY" gen_libs.py
+"$PY" gen_project.py
+"$PY" gen_schematic.py
+"$KIPY" gen_pcb.py
 
 cd "$K"
 kicad-cli sch erc --severity-all --exit-code-violations -o "$F/erc.rpt" psu_carrier.kicad_sch
@@ -28,7 +39,7 @@ rm -f "$F/psu_carrier_${REV}_gerbers.zip"
 
 kicad-cli pcb export pos -o "$F/psu_carrier_${REV}_centroid.csv" --format csv --units mm \
   --side front --use-drill-file-origin psu_carrier.kicad_pcb
-python3 "$T/gen_bom.py"
+"$PY" "$T/gen_bom.py"
 
 kicad-cli pcb export pdf -o "$F/psu_carrier_${REV}_assembly.pdf" --mode-single \
   --layers F.Fab,F.Silkscreen,F.Courtyard,Edge.Cuts --include-border-title psu_carrier.kicad_pcb

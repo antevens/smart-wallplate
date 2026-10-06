@@ -69,7 +69,10 @@ I/P–O/P per its datasheet.
 ```
 pcb/tools/export_fab.sh        # regenerate libs, schematic, board; ERC + DRC; all fab outputs + STEP
 ```
-Individual steps (system `python3` has pcbnew; the 3D envelope needs the CAD venv):
+The script picks the Python that can `import pcbnew` (works with a venv active; override
+with KICAD_PYTHON). Stock libraries are found via KICAD9_SYMBOL_DIR / KICAD9_FOOTPRINT_DIR
+or the usual install paths; if absent, the committed project libraries are kept.
+Individual steps (the 3D envelope needs the CAD venv):
 `gen_3d.py` (TR5 fuse envelope, KiCad ships none), `gen_libs.py`, `gen_project.py`,
 `gen_schematic.py`, `gen_pcb.py`, `gen_bom.py`. Edit `tools/parts.py` and re-run instead of
 hand-editing the KiCad files. Hand edits in KiCad are fine too, but they are overwritten

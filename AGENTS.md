@@ -51,14 +51,18 @@ build/               generated outputs (git-ignored)
 ## Commands
 
 ```
-make setup      # python venv + requirements (once)
+make system-deps  # apt: KiCad 9, venv, headless libs for OrcaSlicer (Ubuntu 24.04; tools/install-system-deps.sh)
+make setup      # python venv + requirements + pinned OrcaSlicer AppImage in .tools/ (once)
 make pcb        # KiCad: libs, schematic, board, ERC + DRC (fails on any violation), fab pack, STEP
 make cad        # STEP/STL into build/, print STLs into build/print/
 make check      # geometry, barrier, PSU fit, printability checks - must pass
-make print      # OrcaSlicer projects + G-code (SLICER=/path/to/OrcaSlicer.AppImage; ElegooSlicer also works)
+make print      # OrcaSlicer projects + G-code (pinned 2.4.2 from `make slicer`; SLICER=... overrides)
 make renders    # docs/renders/v0.2_sections.png
 ```
-KiCad 9.x (`kicad-cli` on PATH, system python with `pcbnew`). The PCB scripts gate on:
+KiCad 9.x (`kicad-cli` on PATH). `export_fab.sh` finds KiCad's Python (`import pcbnew`) even with a
+venv active (override: KICAD_PYTHON) and the stock libraries via KICAD9_SYMBOL_DIR /
+KICAD9_FOOTPRINT_DIR or the usual install paths; without them it keeps the committed
+project libraries. The PCB scripts gate on:
 ```
 kicad-cli sch erc --severity-all --exit-code-violations pcb/kicad/psu_carrier.kicad_sch
 kicad-cli pcb drc --severity-all --schematic-parity --exit-code-violations pcb/kicad/psu_carrier.kicad_pcb

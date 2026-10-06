@@ -4,11 +4,33 @@ Everything is copied from the stock KiCad 9 libraries so the project is
 self-contained. Only change: J1's pads are shrunk 2.6 -> 2.4 mm so the
 L'-N copper gap is >= 2.5 mm (stock pads leave 2.48 mm at 5.08 mm pitch).
 """
-import copy, re, shutil
+import copy, os, re, shutil, sys
 from pathlib import Path
 from sexpr import loads, dumps, find, first, Sym, S
 
-KI = Path("/usr/share/kicad")
+# Where KiCad's stock libraries live differs per install. KiCad's own environment
+# variables win; then the usual distro / Flatpak / macOS locations.
+_BASES = ["/usr/share/kicad", "/usr/local/share/kicad", "/opt/kicad/share/kicad",
+          "/var/lib/flatpak/app/org.kicad.KiCad/current/active/files/share/kicad",
+          "~/.local/share/flatpak/app/org.kicad.KiCad/current/active/files/share/kicad",
+          "/Applications/KiCad/KiCad.app/Contents/SharedSupport"]
+_cli = shutil.which("kicad-cli")
+if _cli:
+    _BASES.insert(0, str(Path(_cli).resolve().parents[1] / "share" / "kicad"))
+
+
+def stock_dir(kind, env):
+    """kind: 'symbols' or 'footprints'; env: SYMBOL or FOOTPRINT."""
+    cands = [os.environ.get(f"KICAD{v}_{env}_DIR", "") for v in ("9", "8", "")]
+    cands += [str(Path(b).expanduser() / kind) for b in _BASES]
+    for c in cands:
+        if c and Path(c).is_dir():
+            return Path(c)
+    return None
+
+
+SYM_DIR = stock_dir("symbols", "SYMBOL")
+FP_DIR = stock_dir("footprints", "FOOTPRINT")
 PRJ = Path(__file__).resolve().parents[1] / "kicad"
 LIB = "psu_carrier"
 
@@ -38,7 +60,7 @@ FOOTPRINTS = {  # project name: (stock lib, stock name)
 
 def stock_symbol(lib, name):
     """Return a flattened copy of a stock symbol (resolves `extends`)."""
-    L = loads((KI / "symbols" / f"{lib}.kicad_sym").read_text())
+    L = loads((SYM_DIR / f"{lib}.kicad_sym").read_text())
     syms = {s[1]: s for s in find(L, "symbol")}
     s = copy.deepcopy(syms[name])
     ext = first(s, "extends")
@@ -75,7 +97,7 @@ def build_footprints():
         shutil.rmtree(d)
     d.mkdir(parents=True)
     for new, (lib, name) in FOOTPRINTS.items():
-        txt = (KI / "footprints" / f"{lib}.pretty" / f"{name}.kicad_mod").read_text()
+        txt = (FP_DIR / f"{lib}.pretty" / f"{name}.kicad_mod").read_text()
         fp = loads(txt)
         fp[1] = new
         if new.endswith("_Pad2.4mm"):
@@ -123,9 +145,25 @@ def build_tables():
         '(descr "Project symbols (copied from KiCad 9 stock libs)"))\n)\n')
 
 
+def _have_stock():
+    if not SYM_DIR or not FP_DIR:
+        return False
+    return all((SYM_DIR / f"{lib}.kicad_sym").exists() for lib, _, _ in SYMBOLS) and \
+        all((FP_DIR / f"{lib}.pretty" / f"{n}.kicad_mod").exists() for lib, n in FOOTPRINTS.values())
+
+
 if __name__ == "__main__":
     PRJ.mkdir(parents=True, exist_ok=True)
-    build_symbols()
-    build_footprints()
+    if _have_stock():
+        build_symbols()
+        build_footprints()
+        print(f"libs written to {PRJ} (from {SYM_DIR} and {FP_DIR})")
+    elif (PRJ / f"{LIB}.kicad_sym").exists() and (PRJ / f"{LIB}.pretty").is_dir():
+        print(f"gen_libs: KiCad stock libraries not found (symbols: {SYM_DIR}, footprints: {FP_DIR});\n"
+              f"          keeping the committed project libraries in {PRJ}.\n"
+              "          Set KICAD9_SYMBOL_DIR / KICAD9_FOOTPRINT_DIR to rebuild them from stock.",
+              file=sys.stderr)
+    else:
+        sys.exit("gen_libs: KiCad stock libraries not found; install KiCad's symbol and footprint\n"
+                 "libraries or set KICAD9_SYMBOL_DIR / KICAD9_FOOTPRINT_DIR")
     build_tables()
-    print("libs written to", PRJ)
