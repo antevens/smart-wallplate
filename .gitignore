@@ -7,3 +7,4 @@ fp-info-cache
 _autosave-*
 *.lck
 .venv/
+.tools/

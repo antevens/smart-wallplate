@@ -19,9 +19,9 @@ printer (CC2 0.4 nozzle), filament and process settings; the parts are already
 oriented. `print/profiles/*.json` hold just the process overrides, importable as
 user presets. Thumbnails are missing (generated headless); the slicer redraws them.
 
-Regenerate after any CAD change: `make cad check print` (set `SLICER` to the
-OrcaSlicer or ElegooSlicer AppImage, or put `orca-slicer` on PATH; headless machines
-need `xvfb-run`). Sliced G-code for checking
+Regenerate after any CAD change: `make cad check print`. `make print` downloads the
+pinned OrcaSlicer AppImage into `.tools/` (checksum-verified) on first use; set `SLICER`
+to use another OrcaSlicer build. Headless machines need `xvfb-run` (`make system-deps`). Sliced G-code for checking
 time/material lands in `build/print/gcode/`.
 
 ## Order of work

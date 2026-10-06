@@ -2,10 +2,10 @@
 
     python print/slice.py            (or: make print)
 
-Works with OrcaSlicer (tested 2.4.2) or ElegooSlicer (tested 1.5.3.5, an OrcaSlicer
-fork); both ship the same CC2 profiles. Point SLICER at the AppImage or an extracted
-squashfs-root/AppRun (ORCA_SLICER / ELEGOO_SLICER also work), or put orca-slicer /
-elegoo-slicer on PATH. Headless machines need xvfb-run.
+Uses OrcaSlicer (pinned in the Makefile, tested 2.4.2; `make slicer` downloads it to
+.tools/). SLICER overrides it: an OrcaSlicer AppImage, an extracted squashfs-root/AppRun,
+or another OrcaSlicer fork with the same CLI. Headless machines need xvfb-run
+(`make system-deps`).
 
 Settings = stock CC2 system profiles + the small override sets below (also written
 to print/profiles/*.json so they can be imported into the GUI as user presets).
@@ -44,12 +44,13 @@ JOBS = {
 
 
 def slicer():
-    cands = [os.environ.get(v, "") for v in ("SLICER", "ORCA_SLICER", "ELEGOO_SLICER")]
-    cands += [shutil.which(n) or "" for n in ("orca-slicer", "OrcaSlicer", "elegoo-slicer", "ElegooSlicer")]
+    cands = [os.environ.get("SLICER", "")]
+    cands += sorted(str(p) for p in (ROOT / ".tools").glob("OrcaSlicer_*.AppImage"))[-1:]
+    cands += [shutil.which(n) or "" for n in ("orca-slicer", "OrcaSlicer")]
     for c in cands:
         if c and Path(c).exists():
             return Path(c)
-    sys.exit("No slicer found: set SLICER to an OrcaSlicer/ElegooSlicer AppImage or squashfs-root/AppRun")
+    sys.exit("OrcaSlicer not found: run `make slicer`, or set SLICER to an OrcaSlicer AppImage")
 
 
 def version(run):
@@ -95,7 +96,11 @@ def flat(idx, typ, name):
 def main():
     exe = slicer()
     idx = index(profiles_dir(exe))
-    run = ["xvfb-run", "-a", str(exe)] if not os.environ.get("DISPLAY") and shutil.which("xvfb-run") else [str(exe)]
+    run = [str(exe)]
+    if not os.environ.get("DISPLAY"):
+        if not shutil.which("xvfb-run"):
+            sys.exit("no DISPLAY and no xvfb-run: run `make system-deps` (or install xvfb)")
+        run = ["xvfb-run", "-a"] + run
     os.environ.setdefault("APPIMAGE_EXTRACT_AND_RUN", "1")  # AppImages without FUSE
     print("slicer:", version(run), f"({exe})")
     gdir = ROOT / "build" / "print" / "gcode"

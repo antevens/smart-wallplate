@@ -11,9 +11,10 @@ UL94 V-0 PC-FR) and a **trim plate** (PETG/ASA), for an Elegoo Centauri Carbon 2
 The PSU carrier PCB is a KiCad 9 project with a PCBWay order pack.
 
 ```
-make setup           # once
+make system-deps     # once, Ubuntu 24.04 (KiCad 9, headless slicer libs)
+make setup           # once (venv + pinned OrcaSlicer)
 make cad check       # CAD -> build/, all checks must pass
-make print           # OrcaSlicer projects -> print/*.3mf  (set SLICER)
+make print           # OrcaSlicer projects -> print/*.3mf
 make pcb             # KiCad ERC/DRC + PCBWay pack -> pcb/fab/
 ```
 Section renders: `docs/renders/`. First-pass renders: `reference/v0.1-openscad/renders/`.
