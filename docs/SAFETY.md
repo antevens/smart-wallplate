@@ -20,7 +20,10 @@ hard requirement.
 8. Barrier geometry (pocket shell, switch well, collar; the v0.2 box insert) is
    printed in a UL94 V-0 filament with its datasheet on file. PLA/PETG are for
    test fits only.
-9. No holes may be added to the barrier other than the 5 V pass-through.
+9. No holes may be added to the barrier other than the 5 V pass-through. The rocker
+   panel cutout is closed by the rocker body itself: never energise with the rocker out.
+   `make check` runs a barrier-continuity test (mains air must not reach the pocket,
+   trim hollow or room); it must pass.
 
 ## Regulatory (BC, Canada)
 10. Work under a homeowner electrical permit; ask the inspector about the concealed

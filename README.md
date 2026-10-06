@@ -6,8 +6,15 @@ Mean Well IRM-03-5 on a small carrier PCB.
 
 Start with `AGENTS.md` (for people too), then `docs/SAFETY.md`.
 
+v0.2 is two printed parts: a **box insert** (all mains/low-voltage barrier geometry,
+UL94 V-0 PC-FR) and a **trim plate** (PETG/ASA), for an Elegoo Centauri Carbon 2.
+The PSU carrier PCB is a KiCad 9 project with a PCBWay order pack.
+
 ```
-pip install -r cad/build123d/requirements.txt
-make cad check
+make setup           # once
+make cad check       # CAD -> build/, all checks must pass
+make print           # ElegooSlicer projects -> print/*.3mf  (set ELEGOO_SLICER)
+make pcb             # KiCad ERC/DRC + PCBWay pack -> pcb/fab/
 ```
-Outputs land in `build/`. The first-pass renders are in `reference/v0.1-openscad/renders/`.
+Section renders: `docs/renders/`. First-pass renders: `reference/v0.1-openscad/renders/`.
+Nothing here is certified or code-compliant; see `docs/SAFETY.md`.
