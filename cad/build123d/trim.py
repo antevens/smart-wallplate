@@ -1,4 +1,4 @@
-"""v0.2 TRIM PLATE - face, MSR-2 bay (radar skin), SHT45 bay, vents.
+"""TRIM PLATE - face, MSR-2 bay (radar skin), SHT45 bay, vents.
 
 Low-voltage side only: it carries no barrier duty. Any filament (PETG/ASA).
 Print: face down (the exported print STL is already flipped), no supports.
@@ -37,6 +37,11 @@ def build():
     for i in range(-2, 3):  # MSR vents, top edge
         body -= Pos(i * 7 + 1.5, PH / 2 - SKIN + 2, 6) * Box(3, 6, 6)
     body -= Pos(0, SHT_Y, 0) * slab(rr(SHT[0] + 0.8, SHT[1] + 0.8, 0.5), -0.01, PT - SKIN)
+    # sensor flex (D-27) passes the bay frames: MSR-2 frame (right wall, at the wall plane) and the
+    # SHT45 frame (right wall, just under the skin)
+    w = FLEX_W + 0.6
+    body -= Pos(MSR[0] / 2 + CLR + 1.0, MSR_Y, 0.45) * Box(4.0, w, 0.92)
+    body -= Pos(SHT[0] / 2 + 0.4 + 0.8, SHT_Y, (SKIN_Z + 9.4) / 2) * Box(3.0, w, SKIN_Z - 9.4 + 0.01)
     for i in (-1, 0, 1):  # SHT vents: face + bottom edge
         body -= Pos(i * 4, SHT_Y, PT - 1) * Box(2, 6, 4)
         body -= Pos(i * 4, -PH / 2 + 4, 5) * Box(2, 10, 6)

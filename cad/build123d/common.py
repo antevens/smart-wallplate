@@ -1,4 +1,4 @@
-"""Small geometry helpers shared by the v0.2 parts."""
+"""Small geometry helpers shared by the printed parts."""
 from build123d import (Matrix, Pos, Rot, RectangleRounded, Sphere, Cylinder, Plane,
                        extrude, loft, Sketch, Vector)
 

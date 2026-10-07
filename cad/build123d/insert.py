@@ -1,9 +1,11 @@
-"""v0.2 BOX INSERT - every piece of mains/low-voltage barrier lives here.
+"""BOX INSERT - every piece of mains/low-voltage barrier lives here.
 
-Print: UL94 V-0 filament, as modelled (z up, lowest face Z_BOT on the bed), no supports.
+Print: UL94 V-0 filament, as modelled (z up, lowest face Z_BOT = the switch panel's underside
+and the mounting bosses on the bed), no supports. The wiring board snaps onto four posts
+(post.py) screwed into the bosses' tapped M4 holes (D-28).
 Run:  python insert.py  -> ../../build/insert.step / .stl
 """
-from build123d import Box, Cylinder, Polygon, Rectangle, Pos, Rot, Sphere, extrude, Plane
+from build123d import Cone, Cylinder, Rectangle, Pos, Sphere
 from params import *
 from common import rr, stadium, slab, taper, ellipsoid, rod
 
@@ -12,9 +14,6 @@ def outline_solid():
     """Insert without any cavities (also used by trim.py as its clearance envelope)."""
     # pocket shell / thick floor, from the bed up to the face
     body = slab(stadium(*POCKET_OUT), Z_BOT, PT)
-    # PSU block: rails, end stop and gable roof sit inside it
-    body += Pos(0, (PSU_Y0 + PSU_Y1) / 2, 0) * slab(
-        Rectangle(2 * PSU_X, PSU_Y1 - PSU_Y0), Z_BOT, GABLE_PEAK_Z + BARRIER_MIN)
     # 45-degree taper carrying the flange underside out to the plug outline (no overhang)
     t = taper(*POCKET_OUT, POCKET_OUT[0] / 2, -TAPER_D, 0, TAPER_D)
     body += t & slab(rr(*PLUG, PLUG_R), -TAPER_D - 1, 0)
@@ -29,35 +28,13 @@ def outline_solid():
     return body
 
 
-def psu_bay():
-    """Rails, groove and the gabled roof over the PCB back (open at the bottom end)."""
-    y0, y1 = PSU_Y0 - 1, PCB_TOP_Y + RAIL_CLR
-    L, yc = y1 - y0, (y0 + y1) / 2
-    inner = PCB[0] / 2 - RAIL_ENGAGE
-    cav = Pos(0, yc, (Z_BOT - 1 + GABLE_VALLEY_Z) / 2) * Box(2 * inner, L, GABLE_VALLEY_Z - Z_BOT + 1)
-    gz0, gz1 = PCB_FRONT_Z - RAIL_CLR, PCB_BACK_Z + RAIL_CLR
-    cav += Pos(0, yc, (gz0 + gz1) / 2) * Box(PCB[0] + 2 * RAIL_CLR, L, gz1 - gz0)
-    # gables: triangles across X, extruded along Y
-    n = int(2 * inner // GABLE_PITCH)
-    x = -n * GABLE_PITCH / 2
-    pts = [(x, GABLE_VALLEY_Z - 0.01)]
-    for i in range(n):
-        pts += [(x + (i + 0.5) * GABLE_PITCH, GABLE_PEAK_Z), (x + (i + 1) * GABLE_PITCH, GABLE_VALLEY_Z - 0.01)]
-    roof = extrude(Plane.XZ.offset(-y0) * Polygon(*pts, align=None), L)
-    assert abs(roof.bounding_box().min.Y - y0) < 0.01, "gable roof misplaced"
-    return cav + roof
-
-
 def build():
     body = outline_solid()
     # ---------------- cuts ----------------
     body -= slab(stadium(*POCKET_IN), SEAT_Z, PT + 5)                      # remote pocket
     body -= Pos(0, SW_Y, 0) * slab(rr(*WELL_IN, 1), WELL_FLOOR_Z, SEAT_Z + 0.1)  # switch well
     body -= Pos(0, SW_Y, 0) * slab(Rectangle(*SW_CUT), PANEL_BOT_Z - 1, WELL_FLOOR_Z + 1)
-    latch = (SW_CUT[0] + 2 * SW_LATCH_CLR, SW_CUT[1] + 2 * SW_LATCH_CLR)
-    body -= Pos(0, SW_Y, 0) * slab(Rectangle(*latch), Z_BOT - 1, PANEL_BOT_Z)  # rocker body + latches
-    body -= psu_bay()
-    body -= Pos(0, STEEL_Y, 0) * slab(Rectangle(STEEL[0], STEEL[1]), SEAT_Z - STEEL[2], SEAT_Z + 0.1)
+    body -= magnet_recess()
     for s in (-1, 1):                                                       # finger scoops
         body -= Pos(s * SCOOP_X, 0, SCOOP_ZC) * ellipsoid(*SCOOP)
     for s in (-1, 1):                                                       # #6 screw clearance
@@ -65,7 +42,47 @@ def build():
     body -= pass_through()
     for kx, ky in KEY_POS:                                                  # locating pins
         body += Pos(kx, ky, DECK_Z + KEY_H / 2 - 0.01) * Cylinder(KEY_D / 2, KEY_H + 0.02)
+    import sensor_flex
+    body += sensor_flex.shelf()                                             # target board for the spring fingers (D-27)
+    body += mount_bosses()                                                  # after the pocket cut
+    body -= mount_holes()
     return body
+
+
+def mount_bosses():
+    """Bosses for the board posts, from the print-bed plane up into the insert."""
+    out = None
+    for (x, y), top in zip(MOUNT_HOLES, MOUNT_BOSS_TOP):
+        b = Pos(x, y, (Z_BOT + top) / 2) * Cylinder(MOUNT_BOSS_D / 2, top - Z_BOT)
+        out = b if out is None else out + b
+    return out
+
+
+def mount_hole(x, y):
+    """Blind tap-drill hole from the boss face, ending in a 45 deg cone (prints unsupported)."""
+    bore = Pos(x, y, Z_BOT + MOUNT_THREAD_L / 2 - 0.01) * Cylinder(MOUNT_TAP_D / 2, MOUNT_THREAD_L)
+    tip = Pos(x, y, Z_BOT + MOUNT_THREAD_L + MOUNT_TAP_D / 4 - 0.01) * Cone(MOUNT_TAP_D / 2, 0, MOUNT_TAP_D / 2)
+    return bore + tip
+
+
+def mount_holes():
+    out = mount_hole(*MOUNT_HOLES[0])
+    for x, y in MOUNT_HOLES[1:]:
+        out += mount_hole(x, y)
+    return out
+
+
+def magnet_recess():
+    """Supplied magnet recess: from above the magnet's nominal position down to the end of the
+    flat back. The bottom end follows the magnet's own rounded end, so the magnet only needs a
+    straight cut at the top."""
+    w = MAGNET[0] + 2 * MAGNET_CLR
+    r = MAGNET_END_R + MAGNET_CLR
+    top = MAGNET_Y + MAGNET[1] / 2 + MAGNET_CLR
+    z0, z1 = SEAT_Z - MAGNET[2] - MAGNET_SETBACK, SEAT_Z + 0.1
+    end = Pos(0, MAGNET_SLOT_BOT + r, 0) * slab(rr(w, 2 * r, r), z0, z1)
+    upper = Pos(0, (top + MAGNET_SLOT_BOT + r) / 2, 0) * slab(Rectangle(w, top - MAGNET_SLOT_BOT - r), z0, z1)
+    return end + upper
 
 
 def pass_through():

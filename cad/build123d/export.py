@@ -14,6 +14,7 @@ PRINT_ORIENT = {
     "coupon_pocket_well": lambda p: p,
     "coupon_msr": lambda p: Rot(180, 0, 0) * p,
     "coupon_rocker": lambda p: p,
+    "post": lambda p: Rot(90, 0, 0) * p,            # lying on its flat (flat faces -y -> down)
 }
 
 
@@ -33,9 +34,9 @@ def mesh_of(part, tol=0.02):
 
 
 def parts():
-    import insert, trim, coupons
+    import insert, trim, coupons, post
     ins, tr = insert.build(), trim.build()
-    return {"insert": ins, "trim": tr,
+    return {"insert": ins, "trim": tr, "post": post.build(),
             "coupon_pocket_well": coupons.pocket_well(ins),
             "coupon_msr": coupons.msr(tr),
             "coupon_rocker": coupons.rocker_ladder()}

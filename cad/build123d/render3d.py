@@ -1,4 +1,4 @@
-"""Shaded 3D renders for the docs: xvfb-run python render3d.py -> docs/renders/v0.2_*.png"""
+"""Shaded 3D renders for the docs: xvfb-run python render3d.py -> docs/renders/v0.3_*.png"""
 import tempfile
 from pathlib import Path
 import pyvista as pv
@@ -7,11 +7,41 @@ from params import *
 import assembly
 import bilresa
 import insert
+import post
+import sensor_flex
 import trim
 
 R = Path(__file__).resolve().parents[2] / "docs" / "renders"
 COL = {"trim": "#f2f1ee", "insert": "#8d949b", "remote": "#fbfaf6", "rocker": "#b23a32",
-       "psu": "#1f6b3a", "msr": "#3a3a3a"}
+       "board": "#1f6b3a", "posts": "#d9822b", "flex": "#c98a1c", "plug": "#222222", "sht45": "#5b2a86",
+       "fingers": "#e3c565", "target": "#2f7a46", "irm": "#2b2b2b", "wago": "#c9ccd1", "small": "#c8a03a",
+       "msr": "#3a3a3a"}
+BOARD_KEYS = ("board", "rocker", "irm", "wago", "small")
+
+
+def board_parts():
+    """Split the wiring board into coloured groups. From the KiCad STEP when present (it includes
+    the rocker model), else the parameter envelopes."""
+    from build123d import Compound
+    b = assembly.wiring_board()
+    if not assembly.WB_STEP.exists():
+        sw = Compound([Pos(0, SW_Y, WELL_FLOOR_Z + SW_ROCKER_H / 2) * Box(SW_BEZEL[0], SW_BEZEL[1], SW_ROCKER_H),
+                       Pos(0, SW_Y, WELL_FLOOR_Z - SW_BODY[2] / 2) * Box(*SW_BODY)])
+        return {"board": b, "rocker": sw}
+    groups = {k: [] for k in ("board", "rocker", "irm", "wago", "small")}
+    for sol in b.solids():
+        bb = sol.bounding_box()
+        if bb.size.Z < 2.0 and bb.size.X > WB[0] - 1:
+            groups["board"].append(sol)
+        elif bb.max.Z > WB_FRONT_Z + 8:
+            groups["rocker"].append(sol)
+        elif abs(bb.size.X - IRM[0]) < 2 and abs(bb.size.Y - IRM[1]) < 2:
+            groups["irm"].append(sol)
+        elif abs(bb.size.X - WAGO6[0]) < 2:
+            groups["wago"].append(sol)
+        else:
+            groups["small"].append(sol)
+    return {k: Compound(v) for k, v in groups.items() if v}
 
 
 def mesh(part, d, name):
@@ -22,14 +52,14 @@ def mesh(part, d, name):
 
 def parts(lift=0.0, cut=False):
     a = assembly
-    sw = a.Compound([Pos(0, SW_Y, WELL_FLOOR_Z + SW_ROCKER_H / 2) * Box(SW_BEZEL[0], SW_BEZEL[1], SW_ROCKER_H),
-                     Pos(0, SW_Y, PANEL_BOT_Z - SW_BODY[2] / 2) * Box(*SW_BODY)])
     ps = {"trim": trim.build(), "insert": insert.build(), "remote": bilresa.build(lift),
-          "rocker": sw, "psu": a.psu(),
-          "msr": Pos(0, MSR_Y, PT - RADAR_WALL - MSR[2] / 2) * Box(*MSR)}
-    if cut:  # keep x <= 0 for a half-section (the imported board is clipped as a mesh in shot())
+          "msr": Pos(0, MSR_Y, PT - RADAR_WALL - MSR[2] / 2) * Box(*MSR), "posts": post.placed(),
+          **sensor_flex.parts()}
+    ps.update(board_parts())
+    if cut:  # keep x <= 0 for a half-section (board parts are clipped as meshes in shot())
         keep = Pos(-100, 0, 0) * Box(200, 400, 400)
-        ps = {k: (v if k == "psu" else v & keep) for k, v in ps.items()}
+        ps = {k: (v if k in BOARD_KEYS else v & keep) for k, v in ps.items()}
+        ps = {k: v for k, v in ps.items() if k in BOARD_KEYS or (v is not None and v.volume > 1e-6)}
     return ps, cut
 
 
@@ -45,7 +75,7 @@ def shot(name, ps, cam, size=(1400, 1100), hide=(), head=0.55):
             if k in hide or v is None:
                 continue
             m = mesh(v, d, k)
-            if cut and k == "psu":
+            if cut and k in BOARD_KEYS:
                 m = m.clip(normal="x", origin=(0, 0, 0))
             p.add_mesh(m, color=COL[k], smooth_shading=True, split_sharp_edges=True,
                        specular=0.25, specular_power=20)
@@ -58,10 +88,24 @@ def shot(name, ps, cam, size=(1400, 1100), hide=(), head=0.55):
 
 def main():
     R.mkdir(parents=True, exist_ok=True)
-    shot("v0.2_front", parts(), [(150, -170, 260), (0, 0, 0), (0, 1, 0)], hide=("psu", "rocker"))
-    shot("v0.2_remote_out", parts(lift=45), [(210, -200, 330), (0, 0, 15), (0, 1, 0)], hide=("psu",))
-    shot("v0.2_section", parts(cut=True), [(290, 70, 150), (0, 0, -5), (0, 1, 0)])
-    shot("v0.2_back", parts(), [(130, -120, -230), (0, -5, -10), (0, 1, 0)], hide=("trim", "msr"), head=1.0)
+    shot("v0.3_front", parts(), [(150, -170, 260), (0, 0, 0), (0, 1, 0)], hide=BOARD_KEYS)
+    shot("v0.3_remote_out", parts(lift=45), [(210, -200, 330), (0, 0, 15), (0, 1, 0)], hide=BOARD_KEYS)
+    shot("v0.3_section", parts(cut=True), [(290, 70, 150), (0, 0, -5), (0, 1, 0)])
+    shot("v0.3_back", parts(), [(130, -120, -230), (0, -5, -10), (0, 1, 0)], hide=("trim", "msr"), head=1.0)
+    # exploded: remote, trim, insert (with rocker), wiring board pulled apart along z
+    ps, _ = parts()
+    off = {"remote": 95, "trim": 55, "msr": 55, "flex": 55, "plug": 55, "sht45": 55, "fingers": 55, "target": 0,
+           "insert": 0, "posts": -25,
+           **{k: -55 for k in BOARD_KEYS}}
+    exploded = {k: Pos(0, 0, off[k]) * v for k, v in ps.items() if k in off}
+    shot("v0.3_exploded", exploded, [(330, -260, 120), (0, 0, 15), (0, 1, 0)], size=(1400, 1300), head=0.8)
+    # sensor flex route (trim and remote hidden): MSR-2 end, right channel, SHT45 tail
+    shot("v0.3_flex", parts(), [(170, -150, 230), (8, 0, 5), (0, 1, 0)], size=(1400, 1300),
+         hide=("trim", "remote", "posts") + BOARD_KEYS, head=0.9)
+    # power contact: spring fingers on the flex over the target board on the insert shelf
+    keep = ("insert", "flex", "fingers", "target", "plug")
+    shot("v0.3_contact", parts(), [(75, -10, 45), (35.5, 20, 8), (0, 0, 1)], size=(1200, 900),
+         hide=tuple(k for k in list(COL) if k not in keep), head=1.0)
     shot("bilresa_model", {"remote": bilresa.build()}, [(70, -90, 120), (0, 0, 0), (0, 1, 0)], size=(900, 900))
     shot("bilresa_back", {"remote": bilresa.build()}, [(95, -60, -110), (0, 0, SEAT_Z + B_D / 2), (0, 1, 0)], size=(900, 900), head=1.0)
 

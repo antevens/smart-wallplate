@@ -1,6 +1,6 @@
 """Fast test-fit coupons (print in PETG before committing PC-FR / a full trim).
 
-  coupon_pocket_well  top of the insert: switch well + panel, upper pocket end, key pin,
+  coupon_pocket_well  top of the insert: switch well + panel, magnet recess, upper pocket end, key pin,
                       5 V pass-through, top screw boss. Rocker snap-in + remote fit.
   coupon_msr          top of the trim: MSR-2 bay, radar skin, light-sensor hole, vents.
   coupon_rocker       panel-thickness ladder for the C1300 snap-in (SW_PANEL_T is MEASURE):
@@ -17,7 +17,7 @@ PANEL_STEPS = (1.0, 1.5, 2.0, 2.5, 3.0)
 
 def pocket_well(ins=None):
     ins = ins or insert.build()
-    y0 = PSU_Y1 - 6.0                       # just below the latch cavity / end stop
+    y0 = MAGNET_SLOT_BOT - 3.0                             # include the magnet recess
     keep = Pos(0, (y0 + 60) / 2, (PANEL_BOT_Z + PT + 5) / 2) * Box(100, 60 - y0, PT + 5 - PANEL_BOT_Z)
     return ins & keep
 

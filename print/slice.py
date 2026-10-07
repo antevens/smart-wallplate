@@ -33,6 +33,8 @@ TRIM = {"wall_loops": "4", "top_shell_layers": "4", "bottom_shell_layers": "7",
         "sparse_infill_density": "20%", "sparse_infill_pattern": "gyroid",
         "enable_support": "0", "brim_type": "no_brim", "seam_position": "back"}
 COUPON = dict(BARRIER, brim_type="no_brim")
+# Board posts: small and solid, lying on their flat; the snap prongs need full infill.
+POST = dict(BARRIER, sparse_infill_density="100%", brim_type="no_brim")
 
 JOBS = {
     # name: (parts, filament, process overrides)
@@ -40,6 +42,7 @@ JOBS = {
     "insert_PETG_testfit": (["insert"], "Elegoo PETG @ECC2", dict(BARRIER, brim_type="no_brim")),
     "trim_PETG": (["trim"], "Elegoo PETG @ECC2", TRIM),
     "coupons_PETG": (["coupon_pocket_well", "coupon_msr", "coupon_rocker"], "Elegoo PETG @ECC2", COUPON),
+    "posts_PC-FR": (["post"] * 5, "Elegoo PC-FR @ECC2", POST),       # 4 + 1 spare
 }
 
 
