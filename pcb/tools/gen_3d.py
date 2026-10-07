@@ -1,17 +1,23 @@
-"""Envelope 3D model for the TR5 fuse (KiCad ships none for Fuse_Littelfuse_372_D8.50mm).
+"""Envelope 3D models for the footprints without a vendor model (kicad/3d/*.step).
 
-Littelfuse 392 (TE5/TR5) body: 8.5 mm dia x 8 mm high, leads 5.08 mm pitch.
-Origin = pad 1, model sits on the board top (z=0 up). Envelope only.
-Run with the CAD venv:  .venv/bin/python pcb/tools/gen_3d.py
+Run with the CAD venv: .venv/bin/python pcb/tools/gen_3d.py
+Origin = footprint origin, +Z = away from the board on the mounting side.
 """
 from pathlib import Path
-from build123d import Cylinder, Pos, Align, export_step
+from build123d import Box, Pos, export_step
 
 OUT = Path(__file__).resolve().parents[1] / "kicad" / "3d"
 OUT.mkdir(parents=True, exist_ok=True)
-body = Pos(2.54, 0, 0.5) * Cylinder(4.25, 7.5, align=(Align.CENTER, Align.CENTER, Align.MIN))
-leads = [Pos(x, 0, -3.0) * Cylinder(0.3, 3.5, align=(Align.CENTER, Align.CENTER, Align.MIN)) for x in (0, 5.08)]
-part = body + leads[0] + leads[1]
-part.label = "Fuse_TR5_D8.5mm_H8mm"
-export_step(part, str(OUT / "Fuse_TR5_D8.5mm_H8mm.step"))
-print("wrote", OUT / "Fuse_TR5_D8.5mm_H8mm.step")
+
+# Marquardt 1802.2504 (drawing 1802.2504 rev g): body 18.6 x 22 from the PCB seat to the
+# panel face (16.2), flange 21 x 24 x 2 on the panel face, rocker 5.3 above the panel face.
+# Body centred on the footprint origin, turned 90 degrees (long side along x).
+rocker = Pos(0, 0, 16.2 / 2) * Box(22, 18.6, 16.2)
+rocker += Pos(0, 0, 16.2 + 1) * Box(24, 21, 2)
+rocker += Pos(0, 0, 18.2 + 1.65) * Box(19, 16, 3.3)
+export_step(rocker, str(OUT / "Marquardt_1802.2504.step"))
+
+# WAGO 2604-1106: 32.4 x 19.2, 16.7 above the board; body centred at y -2.57 in the footprint
+wago = Pos(0, 2.57, 16.7 / 2) * Box(32.4, 19.2, 16.7)
+export_step(wago, str(OUT / "WAGO_2604-1106.step"))
+print("wrote", OUT)

@@ -1,4 +1,4 @@
 (sym_lib_table
 	(version 7)
-	(lib (name "psu_carrier")(type "KiCad")(uri "${KIPRJMOD}/psu_carrier.kicad_sym")(options "")(descr "Project symbols (copied from KiCad 9 stock libs)"))
+	(lib (name "wiring_board")(type "KiCad")(uri "${KIPRJMOD}/wiring_board.kicad_sym")(options "")(descr "Project symbols"))
 )

@@ -1,23 +1,4 @@
-"""Write the seed kicad/wiring_board.kicad_pro and the custom DRC rules (.kicad_dru).
-
-gen_pcb.py re-saves the project file with netclasses set through the pcbnew API.
-"""
-import json
-from pathlib import Path
-from parts import PROJECT
-
-PRJ = Path(__file__).resolve().parents[1] / "kicad"
-
-PRO = {
-    "board": {"design_settings": {"rule_severities": {"lib_footprint_issues": "warning",
-                                                      "lib_footprint_mismatch": "warning"}}},
-    "meta": {"filename": f"{PROJECT}.kicad_pro", "version": 3},
-    "schematic": {"meta": {"version": 1}},
-    "sheets": [["", "Root"]],
-}
-
-MAINS = "(A.NetClass == 'Mains_L' || A.NetClass == 'Mains_N')"
-DRU = f"""(version 1)
+(version 1)
 # Spacing design TARGETS for the wiring board (docs/DESIGN.md D-24, AGENTS.md hard
 # constraint 3): 270 V working, overvoltage category III, pollution degree 2, stricter of
 # IEC 60664-1 / EN, BS EN, UL and CSA 62368-1. Not a compliance claim: human review required.
@@ -26,11 +7,11 @@ DRU = f"""(version 1)
     (constraint edge_clearance (min 0.5mm)))
 
 (rule "Mains copper to board edge >= 1.0 mm"
-    (condition "{MAINS}")
+    (condition "(A.NetClass == 'Mains_L' || A.NetClass == 'Mains_N')")
     (constraint edge_clearance (min 1.0mm)))
 
 (rule "Mains copper to mounting holes >= 1.0 mm"
-    (condition "{MAINS} && B.Type == 'Hole'")
+    (condition "(A.NetClass == 'Mains_L' || A.NetClass == 'Mains_N') && B.Type == 'Hole'")
     (constraint hole_clearance (min 1.0mm)))
 
 # Creepage: on this flat board the surface path between copper on one layer is never shorter
@@ -52,16 +33,16 @@ DRU = f"""(version 1)
     (constraint clearance (min 3.5mm)))
 
 (rule "Mains to PE >= 3.5 mm"
-    (condition "{MAINS} && B.NetClass == 'PE'")
+    (condition "(A.NetClass == 'Mains_L' || A.NetClass == 'Mains_N') && B.NetClass == 'PE'")
     (constraint clearance (min 3.5mm)))
 
 (rule "Mains to 5 V side >= 8.0 mm (reinforced, routed slot under the PSU)"
-    (condition "{MAINS} && B.NetClass == 'SELV'")
+    (condition "(A.NetClass == 'Mains_L' || A.NetClass == 'Mains_N') && B.NetClass == 'SELV'")
     (constraint clearance (min 8.0mm))
     (constraint creepage (min 8.0mm)))
 
 (rule "Mains to the PSU's NC pin (DC end) >= 8.0 mm"
-    (condition "{MAINS} && B.NetName == 'unconnected-(PS1-NC-Pad5)'")
+    (condition "(A.NetClass == 'Mains_L' || A.NetClass == 'Mains_N') && B.NetName == 'unconnected-(PS1-NC-Pad5)'")
     (constraint clearance (min 8.0mm)))
 
 # Exception (AGENTS.md hard constraint 3): pins of one rated part keep the part's own
@@ -69,10 +50,3 @@ DRU = f"""(version 1)
 (rule "Pins of one rated part"
     (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.Parent.Reference == B.Parent.Reference")
     (constraint clearance (min 0.2mm)))
-"""
-
-if __name__ == "__main__":
-    PRJ.mkdir(parents=True, exist_ok=True)
-    (PRJ / f"{PROJECT}.kicad_pro").write_text(json.dumps(PRO, indent=2) + "\n")
-    (PRJ / f"{PROJECT}.kicad_dru").write_text(DRU)
-    print("project seed + rules written")
