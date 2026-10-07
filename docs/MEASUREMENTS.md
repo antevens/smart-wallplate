@@ -1,13 +1,15 @@
 # Measurements to take (fill in, then update cad/build123d/params.py)
 
-Use calipers; record to 0.1 mm. Measure 2 samples where possible. `status`: TODO / DONE.
+Use calipers; record to 0.1 mm. Measure 2 samples where possible. `status`: TODO / DONE /
+REF (published or third-party reference value in use until measured).
 
 | param | what | how | value | status |
 |-------|------|-----|-------|--------|
-| B_W | BILRESA width (widest) | across the short axis | | TODO |
-| B_H | BILRESA height | long axis | | TODO |
+| B_W | BILRESA width (widest) | across the short axis | 45.0 (reference: IKEA UK product size; third-party mount pocket 45.4) | REF |
+| B_H | BILRESA height | long axis | 70.0 (reference: IKEA UK product size; third-party mount pocket 70.4) | REF |
 | B_D | BILRESA depth | back cover to top of wheel | | TODO |
 | — | BILRESA face profile | photo + depth of wheel ring vs body | | TODO |
+| B_BACK_RUN, B_BACK_RISE | BILRESA back round-over (inset and height of the curve) | radius gauge or profile photo | 8.5 / 8.5 (reference: third-party mount pocket, quarter circle R≈8.5) | REF |
 | STEEL | steel target w × h × t | from wall mount | | TODO |
 | SW_PANEL_T | C1300 snap-in panel range | datasheet (cite page), then confirm on `coupon_rocker` (notches = 1.0/1.5/2.0/2.5/3.0 mm) | | TODO |
 | SW_BEZEL | C1300 bezel w × h | calipers | | TODO |

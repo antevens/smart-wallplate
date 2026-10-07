@@ -10,12 +10,62 @@ v0.2 is two printed parts: a **box insert** (all mains/low-voltage barrier geome
 UL94 V-0 PC-FR) and a **trim plate** (PETG/ASA), for an Elegoo Centauri Carbon 2.
 The PSU carrier PCB is a KiCad 9 project with a PCBWay order pack.
 
-```
+```bash
 make system-deps     # once, Ubuntu 24.04 (KiCad 9, headless slicer libs)
 make setup           # once (venv + pinned OrcaSlicer)
 make cad check       # CAD -> build/, all checks must pass
 make print           # OrcaSlicer projects -> print/*.3mf
 make pcb             # KiCad ERC/DRC + PCBWay pack -> pcb/fab/
 ```
-Section renders: `docs/renders/`. First-pass renders: `reference/v0.1-openscad/renders/`.
+
 Nothing here is certified or code-compliant; see `docs/SAFETY.md`.
+
+## Renders
+
+### v0.2
+
+Shaded views of the assembly: trim plate (white), box insert (grey), BILRESA
+remote (model, sized by the `MEASURE` placeholders), rocker (red), PSU carrier
+(green). Regenerate with `make renders`.
+
+| Front | Remote lifted out |
+| --- | --- |
+| ![v0.2 front](docs/renders/v0.2_front.png) | ![v0.2 remote out](docs/renders/v0.2_remote_out.png) |
+
+| Half-section | Back, mains side |
+| --- | --- |
+| ![v0.2 half-section](docs/renders/v0.2_section.png) | ![v0.2 back](docs/renders/v0.2_back.png) |
+
+BILRESA model: stadium outline, wheel with its gap ring, three LEDs, side
+parting line, and a back that curves from a flat central pad out to the sides.
+
+| Front | Back |
+| --- | --- |
+| ![BILRESA model, front](docs/renders/bilresa_model.png) | ![BILRESA model, back](docs/renders/bilresa_back.png) |
+
+Cross-sections: box insert (red, UL94 V-0), trim plate (blue), PSU carrier
+(green), BILRESA (grey). The dashed line is the wall surface.
+
+![v0.2 assembly cross-sections](docs/renders/v0.2_sections.png)
+
+PSU carrier, component side, from `make pcb`:
+
+![PSU carrier, isometric](pcb/fab/psu_carrier_3d.png)
+
+| Top | Bottom |
+| --- | --- |
+| ![PSU carrier, top](pcb/fab/psu_carrier_3d_top.png) | ![PSU carrier, bottom](pcb/fab/psu_carrier_3d_bottom.png) |
+
+### v0.1 concept (superseded)
+
+Single-piece OpenSCAD plate, kept in `reference/v0.1-openscad/` for reference.
+
+| Front | Remote lifted out |
+| --- | --- |
+| ![v0.1 front](reference/v0.1-openscad/renders/01_front.png) | ![v0.1 remote out](reference/v0.1-openscad/renders/02_remote_out.png) |
+
+| Section | Back, mains side |
+| --- | --- |
+| ![v0.1 section](reference/v0.1-openscad/renders/03_section.png) | ![v0.1 back](reference/v0.1-openscad/renders/04_back_mains_side.png) |
+
+![v0.1 PSU PCB and wiring concept](reference/v0.1-openscad/renders/05_psu_pcb_and_wiring.png)

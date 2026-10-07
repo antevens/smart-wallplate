@@ -38,8 +38,9 @@ print: $(if $(filter $(abspath $(ORCA_APPIMAGE)),$(SLICER)),$(ORCA_APPIMAGE))  #
 pcb:            ## KiCad project, ERC + DRC, PCBWay fab pack, cad/vendor/psu_carrier.step
 	pcb/tools/export_fab.sh
 
-renders:        ## docs/renders/v0.2_sections.png
+renders:        ## docs/renders/*.png: section sheet + shaded 3D views (3D needs xvfb-run headless)
 	cd $(CAD) && $(PY) renders.py
+	cd $(CAD) && $(if $(DISPLAY),,xvfb-run -a) $(PY) render3d.py
 
 all: pcb cad check print renders
 

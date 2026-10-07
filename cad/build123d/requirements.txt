@@ -2,3 +2,4 @@ build123d>=0.13
 trimesh>=4
 shapely>=2.1
 matplotlib>=3.8
+pyvista>=0.44

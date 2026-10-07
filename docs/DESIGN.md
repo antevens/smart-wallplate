@@ -40,6 +40,7 @@
 | D-18 | Insert material: **Elegoo PC-FR** (retailer listing: UL 94 V-0; test thickness still to be confirmed from the datasheet → `V0_RATED_T`). Stock "Elegoo PC-FR @ECC2" slicer profile, 6 walls. | Printable on the CC2 (280 °C), has a vendor profile. A filament's V-0 rating is for moulded bars; a printed part is not certified by it. |
 | D-19 | F1 = T1A 250 V TR5 (Littelfuse 39211000000). **Designer's choice, needs human review.** | Mean Well's IRM-03 spec and PCB installation manual give no external fuse rating; inrush 20 A typ at 230 VAC (datasheet). |
 | D-20 | PCB: all THT, one side, PCBWay turnkey. Isolation targets enforced as KiCad 9 netclass + custom DRC rules (clearance and `creepage`). | See `pcb/SPEC.md`. Targets, not a compliance claim. |
+| D-21 | BILRESA modelled as 45 × 70 mm with an R8.5 back round-over; pocket clearance `CLR` 0.6 → 0.5 mm. | IKEA UK lists the product at 45 × 70 × 20 mm; a third-party wall mount's pocket measures 45.4 × 70.4 with a quarter-circle back of R≈8.5. At 45 mm, `CLR` 0.6 put the pocket shell 0.1 mm outside the insert's box-clearance outline. Reference values until measured. |
 
 ## Known risks / to verify
 - Metal boxes: ears may collide with the pocket; BILRESA Thread signal may drop when recessed.
