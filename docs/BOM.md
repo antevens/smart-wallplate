@@ -20,7 +20,7 @@ Prices/stock as seen Oct 2026; re-check. Bold = safety-critical, don't substitut
 | — | CN2 mating plug | TBD (0.4 mm, 2 rows; part open) | D-27; confirm from the GPIO add-on's plug or Apollo. |
 | — | SMT spring fingers ×2 | **Harwin S7081-42R** (gold, 4 A) | D-27: on the sensor flex, +5 V and GND, working height 2.0 mm. |
 | — | Target board, 0.6 mm, ENIG pads | PCBWay, with the flex | D-27: on the insert shelf; the 5 V lead is soldered to it. |
-| — | 5 V lead, 300 V-rated insulation | — | J2 (JST PH) → pass-through → power contact beside the insert flange. |
+| — | 5 V lead: twin, 2 × 0.8 mm OD wires (≈ 28 AWG), 300 V-rated insulation, JST PH plug | — | J2 (JST PH) → pass-through → target board lead pads. Lead OD ≤ 1.6 mm to exit the pass-through under the trim skin (`LEAD_D`). |
 | — | Board posts ×4 (+1 spare) | printed, `print/posts_PC-FR.3mf` | D-28: screw into the insert, snap through the board's mounting holes. |
 | — | M4 × 0.7 tap and M4 die | any | Tap the insert's four boss holes, cut the posts' studs after printing. |
 | — | #6-32 × 1" oval-head screws | — | ×2, to box ears. |

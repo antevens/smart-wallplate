@@ -1,9 +1,8 @@
 # Design: requirements and decision log
 
 ## Context
-- House in Nanaimo, BC, Canada. NA single-gang device boxes, 2" × 3" opening (≈50.8 × 76.2 mm), Decora/Leviton switches today.
-- Every light socket has an IKEA Matter (Thread) smart bulb. Home Assistant on an Nvidia Orin NX.
-- Owner has electronics experience, is buying a 3D printer, will do the work under a BC homeowner electrical permit.
+- NA single-gang device boxes, 2" × 3" opening (≈50.8 × 76.2 mm).
+- Every light socket has an IKEA Matter (Thread) smart bulb(s). Typically controlled by Home Assistant.
 
 ## Requirements
 | ID | Requirement |
@@ -39,7 +38,7 @@
 | D-17 | 5 V lead pass-through: vertical leg out of the box (room-right, J2 side) then 45° out through the flange into the trim hollow. | Only barrier opening; lead never crosses the box rim below the wall plane. |
 | D-18 | Insert material: **Elegoo PC-FR** (retailer listing: UL 94 V-0; test thickness still to be confirmed from the datasheet → `V0_RATED_T`). Stock "Elegoo PC-FR @ECC2" slicer profile, 6 walls. | Printable on the CC2 (280 °C), has a vendor profile. A filament's V-0 rating is for moulded bars; a printed part is not certified by it. |
 | D-19 | F1 = T1A 250 V TR5 (Littelfuse 39211000000). **Designer's choice, needs human review.** | Mean Well's IRM-03 spec and PCB installation manual give no external fuse rating; inrush 20 A typ at 230 VAC (datasheet). |
-| D-20 | PCB: all THT, one side, PCBWay turnkey. Isolation targets enforced as KiCad 9 netclass + custom DRC rules (clearance and `creepage`). | See `pcb/SPEC.md`. Targets, not a compliance claim. |
+| D-20 | PCB: all THT, one side, PCBWay turnkey. Isolation targets enforced as KiCad 9 netclass + custom DRC rules (clearance and `creepage`). | See `pcb/SPEC.md` (removed with the v0.2 carrier; in git history). Targets, not a compliance claim. |
 | D-21 | BILRESA modelled as 45 × 70 mm with an R8.5 back round-over; pocket clearance `CLR` 0.6 → 0.5 mm. | IKEA UK lists the product at 45 × 70 × 20 mm; a third-party wall mount's pocket measures 45.4 × 70.4 with a quarter-circle back of R≈8.5. At 45 mm, `CLR` 0.6 put the pocket shell 0.1 mm outside the insert's box-clearance outline. Reference values until measured. |
 | D-22 | The supplied adhesive magnet goes in a recess in the pocket floor, centred under the remote's flat back, 0.5 mm below the seat (`MAGNET_SETBACK`). | The remote carries a steel plate; the magnet ships separately for wall mounting. Recessing it keeps the seat flat. The setback gap weakens the pull without cutting the magnet; spacers or shims tune it. Replaces the v0.1 "steel target" recess, which assumed the reverse. |
 | D-23 | **Wiring board:** the house cables (line, neutral, ground in and out) land on push-in terminals on the PCB; the rocker switches line on the board; the PSU is fed from the switched line on the same board. Line on one side, neutral on the other, ground copper along both sides. Copper may be 2–6 oz. Supersedes hard constraint 1 ("15 A never on the PCB"), lifted by the human on 2026-10-07. | No tool-free termination exists for the certified rocker: the screw-terminal Bulgin 6000 option could not be confirmed as made, and users should not solder or crimp pigtails. Removes wire nuts and the internal pigtail. Cost: the uncertified board now carries the branch circuit. |

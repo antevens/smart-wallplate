@@ -56,6 +56,12 @@ shelf off the insert flange; the 5 V lead is soldered to the board's top end.
 
 ![v0.3 spring-finger power contact](docs/renders/v0.3_contact.png)
 
+5 V power path (insert cut at the pass-through, seen from the right): the twin lead leaves J2
+on the wiring board, crosses between the rocker and the right-hand posts, goes up through the
+pass-through and out of the flange, and drops onto the target board under the spring fingers.
+
+![v0.3 5 V power path](docs/renders/v0.3_power.png)
+
 BILRESA model: stadium outline, wheel with its gap ring, three LEDs, side
 parting line, and a back that curves from a flat central pad out to the sides.
 

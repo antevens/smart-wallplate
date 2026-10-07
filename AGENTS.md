@@ -42,6 +42,7 @@ cad/build123d/       ACTIVE parametric CAD (Python, build123d)
   trim.py            trim plate (face, MSR-2 / SHT45 bays)
   post.py            board post: screws into the insert, snaps through the board (D-28)
   sensor_flex.py     sensor flex route in the trim: MSR-2 CN2 -> SHT45 (D-27)
+  lead.py            5 V lead: wiring board J2 -> pass-through -> target board
   bilresa.py         BILRESA remote model (rounded back, wheel; MEASURE sizes)
   coupons.py         fast test-fit coupons
   export.py          print-oriented STLs -> build/print/
