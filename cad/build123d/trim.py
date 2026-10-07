@@ -42,6 +42,11 @@ def build():
     w = FLEX_W + 0.6
     body -= Pos(MSR[0] / 2 + CLR + 1.0, MSR_Y, 0.45) * Box(4.0, w, 0.92)
     body -= Pos(SHT[0] / 2 + 0.4 + 0.8, SHT_Y, (SKIN_Z + 9.4) / 2) * Box(3.0, w, SKIN_Z - 9.4 + 0.01)
+    # side wall thinned on the inside over the flex's finger section (track lanes beside the pads)
+    ry0, ry1 = FINGER_LANE_Y[0] - 0.5, FINGER_LANE_Y[1] + 0.5
+    rz0 = FLEX_HI_Z - 0.5
+    body -= Pos(PW / 2 - SKIN + TRIM_WALL_RECESS / 2, (ry0 + ry1) / 2, (rz0 + SKIN_Z) / 2) * Box(
+        TRIM_WALL_RECESS, ry1 - ry0, SKIN_Z - rz0 + 0.01)
     for i in (-1, 0, 1):  # SHT vents: face + bottom edge
         body -= Pos(i * 4, SHT_Y, PT - 1) * Box(2, 6, 4)
         body -= Pos(i * 4, -PH / 2 + 4, 5) * Box(2, 10, 6)

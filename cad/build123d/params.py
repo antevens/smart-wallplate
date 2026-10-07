@@ -128,6 +128,13 @@ LUX_POS = (12.0, 0.0)                     # MEASURE light sensor offset from bay
 SHT = (12.0, 8.0, 4.0)                    # SHT45 bay (the sensor sits on the flex tail, D-27)
 SHT_Y = -62.0
 
+# ---- 5 V lead: wiring board J2 -> pass-through -> target board (D-17, D-27) ----
+LEAD_D = 1.6                              # twin lead, 2 x 0.8 mm 300 V-rated wires (fits the pass-through exit
+                                          # under the trim skin)
+LEAD_WIRE_D = 0.8
+LEAD_X = 17.0                             # run between the rocker body (x <= 11.3) and the right-hand posts
+LEAD_HOLE_OFFSET = 0.8                    # lead kept low in the 45 deg leg so it exits under the skin
+
 # ---- sensor flex (D-27): MSR-2 CN2 -> spring fingers over the insert's target board -> SHT45 ----
 # Single-layer flex in the trim: plug end under the MSR-2, up the top-right corner to just under
 # the face skin, down the right channel (spring-finger section over a shelf on the insert), along
@@ -140,6 +147,10 @@ FLEX_W, FLEX_T, STIFF_T = 4.0, 0.12, 0.15  # flex width, polyimide flex, FR4 sti
 FLEX_X = 36.8                             # flex centre line in the right channel
 FLEX_SKIN_GAP = 0.15                      # flex + stiffener top below the trim's face skin
 FLEX_LEAD_GAP = 1.0                       # free strip along the flange's right face for the 5 V lead
+FLEX_RISE_DY = 12.0                       # run along y over which the flex rises from the wall to under the skin
+FINGER_SEC_OUT = 39.6                     # finger section's outer edge: lanes for 4 tracks beside the finger pads
+FINGER_LANE_MARGIN = 3.0                  # wall-side lanes extend beyond the pads: room for the tracks to step in
+TRIM_WALL_RECESS = 1.0                    # trim side wall thinned on the inside over the finger section
 SHT_CHIP = (1.5, 1.5, 0.5)                # DATASHEET Sensirion SHT45 DFN-4 body, on the flex tail
 # power contact: two Harwin S7081-42R SMT spring fingers (+5 V, GND) on the flex underside
 FINGER = (3.18, 6.25)                     # DATASHEET S7081-42R body w x l (drawing S7081-42R iss. 7)
@@ -187,3 +198,8 @@ SKIN_Z = PT - SKIN                        # underside of the trim's face skin
 FLEX_HI_Z = SKIN_Z - FLEX_SKIN_GAP - STIFF_T - FLEX_T   # flex underside in the channel
 TARGET_TOP_Z = FLEX_HI_Z - FINGER_WH                    # target pads at the fingers' working height
 SHELF_TOP_Z = TARGET_TOP_Z - TARGET_T
+SHT_ENTRY = SHT[0] / 2 + 0.4 + 1.6 + 1.0  # flex tail enters the SHT45 bay frame from the right
+FINGER_SEC_IN = FINGER_X - FINGER_PAD[0] / 2 - 0.3                    # finger section's inner (flange-side) edge
+FINGER_SEC_Y = (FINGER_Y[0] - FINGER_PAD[1] / 2 - 0.5, FINGER_Y[1] + FINGER_PAD[1] / 2 + 0.5)    # flange side
+FINGER_LANE_Y = (FINGER_Y[0] - FINGER_PAD[1] / 2 - FINGER_LANE_MARGIN,
+                 FINGER_Y[1] + FINGER_PAD[1] / 2 + FINGER_LANE_MARGIN)                       # wall side

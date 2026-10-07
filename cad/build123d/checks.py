@@ -146,6 +146,9 @@ def sensor_flex_checks(ins, tr):
     check(lead_edge - face >= FLEX_LEAD_GAP - 1e-6, f"{lead_edge - face:.2f} mm strip along the flange face for the 5 V lead")
     wall = PW / 2 - SKIN
     check(wall - (FLEX_X + FLEX_W / 2) >= 0.15, f"flex clears the trim's side wall by {wall - (FLEX_X + FLEX_W / 2):.2f} mm")
+    rec = wall + TRIM_WALL_RECESS
+    check(rec - FINGER_SEC_OUT >= 0.3 and SKIN - TRIM_WALL_RECESS >= 0.8,
+          f"finger section {rec - FINGER_SEC_OUT:.2f} mm inside the trim wall recess; wall left {SKIN - TRIM_WALL_RECESS} mm")
     lo, hi = FINGER_WH - FINGER_TOL, FINGER_WH + FINGER_TOL
     check(lo >= FINGER_WH_MIN and hi < FINGER_FREE, f"spring fingers at {FINGER_WH} +- {FINGER_TOL} mm working height, inside "
                                                     f"{FINGER_WH_MIN}..{FINGER_FREE} (S7081-42R)")
@@ -168,6 +171,29 @@ def sensor_flex_checks(ins, tr):
             r = p & o
             v = r.volume if r is not None else 0.0
             check(v < 0.01, f"{pn} clears the {on} ({v:.3f} mm3)")
+
+
+def lead_checks(ins, tr):
+    """5 V lead (D-17, D-27): inside the pass-through, clear of everything else."""
+    print("5 V lead")
+    import lead, sensor_flex as sf, bilresa, post, assembly
+    from math import sqrt
+    room = PASS_D / 2 - (LEAD_HOLE_OFFSET + LEAD_D / 2)
+    check(room >= 0.1, f"lead ({LEAD_D} mm) sits {room:.2f} mm inside the pass-through wall in the 45 deg leg")
+    parts = lead.build()
+    fp = sf.parts()
+    msr = Pos(0, MSR_Y, MSR_BACK_Z + MSR[2] / 2) * Box(*MSR)
+    others = {"insert": ins, "trim": tr, "wiring board": assembly.wiring_board(), "board posts": post.placed(),
+              "flex": fp["flex"], "spring fingers": fp["fingers"], "MSR-2 envelope": msr, "remote": bilresa.build()}
+    for on, o in others.items():
+        r = parts["lead"] & o
+        v = r.volume if r is not None else 0.0
+        check(v < 0.05, f"lead clears the {on} ({v:.3f} mm3)")
+    for w in ("wire_5v", "wire_gnd"):
+        for on in ("flex", "spring fingers", "insert", "trim"):
+            r = parts[w] & others[on]
+            v = r.volume if r is not None else 0.0
+            check(v < 0.01, f"{w} clears the {on} ({v:.3f} mm3)")
 
 
 def export_orient(name, part):
@@ -312,6 +338,7 @@ def main():
     board_fit(ins)
     mounting(ins)
     sensor_flex_checks(ins, tr)
+    lead_checks(ins, tr)
     barrier(ins)
     from export import PRINT_ORIENT
     print("printability (no supports)")

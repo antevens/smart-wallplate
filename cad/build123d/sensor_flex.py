@@ -14,10 +14,9 @@ from params import *
 Z_LO = STIFF_T + FLEX_T / 2                      # flex centre at the MSR-2 end
 Z_HI = FLEX_HI_Z + FLEX_T / 2                    # flex centre in the channel
 Z_SHT = SKIN_Z - 0.5 - SHT_CHIP[2] - FLEX_T / 2  # SHT45 on the flex top, 0.5 mm under the face vents
-SHT_ENTRY = SHT[0] / 2 + 0.4 + 1.6 + 1.0         # tail enters the SHT bay frame from the right
 
 ROUTE = [(MSR_CN2_X, MSR_Y, Z_LO), (FLEX_X, MSR_Y, Z_LO),
-         (FLEX_X, MSR_Y - 12.0, Z_HI), (FLEX_X, SHT_Y, Z_HI),
+         (FLEX_X, MSR_Y - FLEX_RISE_DY, Z_HI), (FLEX_X, SHT_Y, Z_HI),
          (SHT_ENTRY, SHT_Y, Z_HI), (0.0, SHT_Y, Z_SHT)]
 
 
@@ -45,17 +44,20 @@ def flex():
 def stiffeners():
     """FR4 stiffeners: under the CN2 plug (wall side) and over the spring fingers (skin side)."""
     plug = Pos(MSR_CN2_X, MSR_Y, STIFF_T / 2) * Box(B2B[0] + 2.0, FLEX_W, STIFF_T)
-    x0, x1 = FINGER_X - FINGER_PAD[0] / 2 - 0.3, FLEX_X + FLEX_W / 2
-    y0, y1 = FINGER_Y[0] - FINGER_PAD[1] / 2 - 0.5, FINGER_Y[1] + FINGER_PAD[1] / 2 + 0.5
+    x0, x1, (y0, y1) = FINGER_SEC_IN, FINGER_SEC_OUT, FINGER_SEC_Y
     fingers = Pos((x0 + x1) / 2, (y0 + y1) / 2, FLEX_HI_Z + FLEX_T + STIFF_T / 2) * Box(x1 - x0, y1 - y0, STIFF_T)
     return plug + fingers
 
 
 def finger_section():
-    """Flex widened towards the flange over the finger section (same span as the stiffener)."""
-    x0, x1 = FINGER_X - FINGER_PAD[0] / 2 - 0.3, FLEX_X + FLEX_W / 2
-    y0, y1 = FINGER_Y[0] - FINGER_PAD[1] / 2 - 0.5, FINGER_Y[1] + FINGER_PAD[1] / 2 + 0.5
-    return Pos((x0 + x1) / 2, (y0 + y1) / 2, FLEX_HI_Z + FLEX_T / 2) * Box(x1 - x0, y1 - y0, FLEX_T)
+    """Flex widened over the finger section: towards the flange over the pads, into the trim wall
+    recess (longer) for the tracks that pass them."""
+    z = FLEX_HI_Z + FLEX_T / 2
+    xi0, xi1, (yi0, yi1) = FINGER_SEC_IN, FLEX_X + FLEX_W / 2, FINGER_SEC_Y
+    xo0, xo1, (yo0, yo1) = FLEX_X - FLEX_W / 2, FINGER_SEC_OUT, FINGER_LANE_Y
+    pads = Pos((xi0 + xi1) / 2, (yi0 + yi1) / 2, z) * Box(xi1 - xi0, yi1 - yi0, FLEX_T)
+    lanes = Pos((xo0 + xo1) / 2, (yo0 + yo1) / 2, z) * Box(xo1 - xo0, yo1 - yo0, FLEX_T)
+    return pads + lanes
 
 
 def fingers():

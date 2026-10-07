@@ -9,12 +9,13 @@ import bilresa
 import insert
 import post
 import sensor_flex
+import lead
 import trim
 
 R = Path(__file__).resolve().parents[2] / "docs" / "renders"
 COL = {"trim": "#f2f1ee", "insert": "#8d949b", "remote": "#fbfaf6", "rocker": "#b23a32",
        "board": "#1f6b3a", "posts": "#d9822b", "flex": "#c98a1c", "plug": "#222222", "sht45": "#5b2a86",
-       "fingers": "#e3c565", "target": "#2f7a46", "irm": "#2b2b2b", "wago": "#c9ccd1", "small": "#c8a03a",
+       "fingers": "#e3c565", "target": "#2f7a46", "lead": "#7a1f1f", "wire_5v": "#d62828", "wire_gnd": "#1b1b1b", "irm": "#2b2b2b", "wago": "#c9ccd1", "small": "#c8a03a",
        "msr": "#3a3a3a"}
 BOARD_KEYS = ("board", "rocker", "irm", "wago", "small")
 
@@ -54,7 +55,7 @@ def parts(lift=0.0, cut=False):
     a = assembly
     ps = {"trim": trim.build(), "insert": insert.build(), "remote": bilresa.build(lift),
           "msr": Pos(0, MSR_Y, PT - RADAR_WALL - MSR[2] / 2) * Box(*MSR), "posts": post.placed(),
-          **sensor_flex.parts()}
+          **sensor_flex.parts(), **lead.build()}
     ps.update(board_parts())
     if cut:  # keep x <= 0 for a half-section (board parts are clipped as meshes in shot())
         keep = Pos(-100, 0, 0) * Box(200, 400, 400)
@@ -95,6 +96,7 @@ def main():
     # exploded: remote, trim, insert (with rocker), wiring board pulled apart along z
     ps, _ = parts()
     off = {"remote": 95, "trim": 55, "msr": 55, "flex": 55, "plug": 55, "sht45": 55, "fingers": 55, "target": 0,
+           "lead": 0, "wire_5v": 0, "wire_gnd": 0,
            "insert": 0, "posts": -25,
            **{k: -55 for k in BOARD_KEYS}}
     exploded = {k: Pos(0, 0, off[k]) * v for k, v in ps.items() if k in off}
@@ -106,6 +108,12 @@ def main():
     keep = ("insert", "flex", "fingers", "target", "plug")
     shot("v0.3_contact", parts(), [(75, -10, 45), (35.5, 20, 8), (0, 0, 1)], size=(1200, 900),
          hide=tuple(k for k in list(COL) if k not in keep), head=1.0)
+    # 5 V power path: insert and trim cut at the pass-through axis, seen from the right
+    ps, _ = parts()
+    keep = Pos(PASS_X - 150, 0, 0) * Box(300, 400, 400)
+    ps = {k: (v & keep if k in ("insert", "trim") else v) for k, v in ps.items()}
+    shot("v0.3_power", ps, [(230, -40, 30), (22, 5, -8), (0, 1, 0)], size=(1400, 1100),
+         hide=("remote", "trim", "posts", "msr"), head=1.0)
     shot("bilresa_model", {"remote": bilresa.build()}, [(70, -90, 120), (0, 0, 0), (0, 1, 0)], size=(900, 900))
     shot("bilresa_back", {"remote": bilresa.build()}, [(95, -60, -110), (0, 0, SEAT_Z + B_D / 2), (0, 1, 0)], size=(900, 900), head=1.0)
 

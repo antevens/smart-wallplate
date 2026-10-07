@@ -16,6 +16,7 @@ import trim
 import bilresa
 import post
 import sensor_flex
+import lead
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "build"
@@ -54,11 +55,13 @@ def build_assembly():
     sht = env(fp["sht45"], "sht45_on_flex", (0.48, 0.12, 0.64))
     flex = env(fp["flex"], "sensor_flex", (0.85, 0.6, 0.1))
     plug = env(fp["plug"] + fp["fingers"] + fp["target"], "cn2_plug_fingers_target", (0.8, 0.7, 0.3))
+    ld = lead.build()
+    lead5 = env(ld["lead"] + ld["wire_5v"] + ld["wire_gnd"], "lead_5v", (0.48, 0.12, 0.12))
     box = Pos(0, 0, -BOX_D / 2) * (Box(BOX_W + 3, BOX_H + 3, BOX_D) - Pos(0, 0, 1.5) * Box(BOX_W, BOX_H, BOX_D))
     box = env(box, "device_box_ref", (0.55, 0.6, 0.65))
     posts = env(post.placed(), "board_posts", (0.85, 0.5, 0.17))
     return Compound(label="wallplate_assembly", children=[ins, tr, remote, switch, posts, wiring_board(), msr, sht,
-                                                           flex, plug, box])
+                                                           flex, plug, lead5, box])
 
 
 if __name__ == "__main__":
