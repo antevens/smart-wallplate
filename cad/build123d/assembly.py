@@ -14,6 +14,7 @@ from params import *
 from common import stadium, slab
 import insert
 import trim
+import bilresa
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "build"
@@ -37,7 +38,7 @@ def psu():
 def build_assembly():
     ins = env(insert.build(), "insert_V0", (0.85, 0.3, 0.25))
     tr = env(trim.build(), "trim", (0.95, 0.95, 0.95))
-    remote = env(slab(stadium(B_W, B_H), SEAT_Z, SEAT_Z + B_D), "bilresa_envelope", (0.95, 0.9, 0.78))
+    remote = env(bilresa.build(), "bilresa_model", (0.98, 0.98, 0.96))
     sw_top = Pos(0, SW_Y, WELL_FLOOR_Z + SW_ROCKER_H / 2) * Box(SW_BEZEL[0], SW_BEZEL[1], SW_ROCKER_H)
     sw_body = Pos(0, SW_Y, PANEL_BOT_Z - SW_BODY[2] / 2) * Box(*SW_BODY)
     switch = env(Compound([sw_top, sw_body]), "c1300_envelope", (0.7, 0.13, 0.13))

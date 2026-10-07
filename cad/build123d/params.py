@@ -28,9 +28,20 @@ SCREW_PITCH = 83.3                        # #6-32 device ears, 3-9/32"
 SCREW_D, SCREW_HEAD_D = 3.8, 8.0
 
 # ---- IKEA BILRESA scroll wheel remote (kept intact, batteries in) ----
-B_W, B_H, B_D = 42.0, 70.0, 20.0          # MEASURE stadium outline + depth
+# B_W/B_H: IKEA UK product size 45 x 70 mm, matched by a third-party mount pocket
+# (45.4 x 70.4). Reference values, confirm with calipers (docs/MEASUREMENTS.md).
+B_W, B_H, B_D = 45.0, 70.0, 20.0          # MEASURE stadium outline + depth (B_D placeholder)
+B_BACK_RUN = 8.5                          # MEASURE flat back inset from the outline (each side); ~R8.5 round-over per the third-party pocket
+B_BACK_RISE = 8.5                         # MEASURE height where the curved back meets the straight side
+B_FRONT_R = 1.0                           # MEASURE front edge round-over
+B_WHEEL_D = 36.0                          # MEASURE scroll wheel diameter
+B_WHEEL_Y = 14.0                          # MEASURE wheel centre above the remote centre
+B_WHEEL_GAP = 0.6                         # MEASURE gap ring around the wheel
+B_LED_Y = -10.0                           # MEASURE three LED dots, y of the row
+B_LED_PITCH = 4.5                         # MEASURE
+B_SEAM_Z = 7.0                            # MEASURE parting line height above the back
 B_PROUD = 2.0
-CLR = 0.6
+CLR = 0.5                                 # remote to pocket wall; 0.6 no longer fits the box with B_W = 45
 POCKET_WALL = 1.6                         # pocket shell = mains barrier
 SEAT_T = 2.5                              # minimum material under the remote seat
 STEEL = (20.5, 12.5, 0.8)                 # MEASURE steel magnet target recess (w, h, depth)

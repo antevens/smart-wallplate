@@ -54,6 +54,10 @@ def solids(ins, tr):
     check(tr.is_valid and len(tr.solids()) == 1, "trim is one valid solid")
     ov = (ins & tr).volume
     check(ov < 0.01, f"insert and trim do not overlap ({ov:.3f} mm3)")
+    import bilresa
+    r = bilresa.build() & ins
+    ov = r.volume if r is not None else 0.0
+    check(ov < 0.01, f"BILRESA model clears the pocket ({ov:.3f} mm3)")
 
 
 def psu_fit(ins):

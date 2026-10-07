@@ -11,12 +11,15 @@ R = ROOT / "docs" / "renders"
 
 def main():
     R.mkdir(parents=True, exist_ok=True)
+    import bilresa
     export_stl(assembly.psu(), str(B / "psu_placed.stl"), tolerance=0.05)
+    export_stl(bilresa.build(), str(B / "bilresa_placed.stl"), tolerance=0.05)
     tool = [sys.executable, str(ROOT / "cad" / "tools" / "sections.py")]
-    parts = [f"{B/'insert.stl'}:tab:red", f"{B/'trim.stl'}:tab:blue", f"{B/'psu_placed.stl'}:tab:green"]
+    parts = [f"{B/'insert.stl'}:tab:red", f"{B/'trim.stl'}:tab:blue", f"{B/'psu_placed.stl'}:tab:green",
+             f"{B/'bilresa_placed.stl'}:tab:gray"]
     from params import PCB_Y, SW_Y, PASS_Y, MSR_Y
     subprocess.run(tool + [str(R / "v0.2_sections.png")] + parts +
-                   ["--title", "v0.2: insert (red, UL94 V-0), trim (blue), PSU carrier (green); dashed = wall surface",
+                   ["--title", "v0.2: insert (red, UL94 V-0), trim (blue), PSU carrier (green), BILRESA (grey); dashed = wall",
                     "--cut", "x=0", "--cut", f"y={PCB_Y}", "--cut", f"y={SW_Y}",
                     "--cut", f"y={PASS_Y}", "--cut", "z=12", "--cut", "z=-19"], check=True)
     print("wrote", R / "v0.2_sections.png")

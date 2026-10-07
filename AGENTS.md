@@ -33,10 +33,12 @@ cad/build123d/       ACTIVE parametric CAD (Python, build123d)
   params.py          single source of truth for ALL geometry
   insert.py          v0.2 box insert (ALL barrier geometry, UL94 V-0)
   trim.py            v0.2 trim plate (face, MSR-2 / SHT45 bays)
+  bilresa.py         BILRESA remote model (rounded back, wheel; MEASURE sizes)
   coupons.py         fast test-fit coupons
   export.py          print-oriented STLs -> build/print/
   assembly.py        insert + trim + envelopes + PCB STEP -> build/assembly.step, pcb_outline.dxf
   checks.py          `make check`: dims, PSU fit, barrier continuity, printability
+  renders.py         2D section sheet; render3d.py shaded 3D views (pyvista)
 cad/tools/           sections.py (section renders for review)
 cad/vendor/          psu_carrier.step (from KiCad, `make pcb`)
 pcb/                 SPEC.md, netlist.yaml, mech/pcb_outline.dxf

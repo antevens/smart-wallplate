@@ -9,10 +9,10 @@ every part is single-material.
 ## Files
 | File | Part(s) | Filament | Est. time / mass (OrcaSlicer 2.4.2) |
 |------|---------|----------|------------------------------------------|
-| `print/coupons_PETG.3mf` | pocket+well coupon, MSR-2 bay coupon, rocker panel ladder | PETG | 1 h 45 m / 45 g |
-| `print/insert_PETG_testfit.3mf` | box insert (fit check only, **not for mains**) | PETG | 2 h 24 m / 62 g |
+| `print/coupons_PETG.3mf` | pocket+well coupon, MSR-2 bay coupon, rocker panel ladder | PETG | 1 h 47 m / 45 g |
+| `print/insert_PETG_testfit.3mf` | box insert (fit check only, **not for mains**) | PETG | 2 h 26 m / 63 g |
 | `print/trim_PETG.3mf` | trim plate | PETG (ASA if in sun) | 57 m / 32 g |
-| `print/insert_PC-FR.3mf` | box insert, **final** | Elegoo PC-FR (UL94 V-0) | 2 h 13 m / 55 g |
+| `print/insert_PC-FR.3mf` | box insert, **final** | Elegoo PC-FR (UL94 V-0) | 2 h 15 m / 55 g |
 
 Open a `.3mf` in OrcaSlicer, check the plate, slice, send. The projects carry the
 printer (CC2 0.4 nozzle), filament and process settings; the parts are already

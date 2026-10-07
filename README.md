@@ -24,9 +24,27 @@ Nothing here is certified or code-compliant; see `docs/SAFETY.md`.
 
 ### v0.2
 
-Cross-sections of the assembly: box insert (red, UL94 V-0), trim plate (blue),
-PSU carrier (green). The dashed line is the wall surface. Regenerate with
-`make renders`.
+Shaded views of the assembly: trim plate (white), box insert (grey), BILRESA
+remote (model, sized by the `MEASURE` placeholders), rocker (red), PSU carrier
+(green). Regenerate with `make renders`.
+
+| Front | Remote lifted out |
+| --- | --- |
+| ![v0.2 front](docs/renders/v0.2_front.png) | ![v0.2 remote out](docs/renders/v0.2_remote_out.png) |
+
+| Half-section | Back, mains side |
+| --- | --- |
+| ![v0.2 half-section](docs/renders/v0.2_section.png) | ![v0.2 back](docs/renders/v0.2_back.png) |
+
+BILRESA model: stadium outline, wheel with its gap ring, three LEDs, side
+parting line, and a back that curves from a flat central pad out to the sides.
+
+| Front | Back |
+| --- | --- |
+| ![BILRESA model, front](docs/renders/bilresa_model.png) | ![BILRESA model, back](docs/renders/bilresa_back.png) |
+
+Cross-sections: box insert (red, UL94 V-0), trim plate (blue), PSU carrier
+(green), BILRESA (grey). The dashed line is the wall surface.
 
 ![v0.2 assembly cross-sections](docs/renders/v0.2_sections.png)
 
