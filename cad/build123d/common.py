@@ -43,3 +43,25 @@ def rod(p0, p1, d):
     c = Cylinder(d / 2, v.length)
     pl = Plane(origin=(p0 + p1) * 0.5, z_dir=v)
     return pl * c
+
+
+def board_hooks(cy, board_x, back_z, front_z, frame_in, hook, t=0.9, w=6.0, clr=0.2, relief=0.6):
+    """Snap hooks at both short ends of a board held in a bay: a tab hangs from the face skin (front_z) at
+    x = +-(board_x / 2 + clr), its lip `hook` deep catching the board's back face at back_z, a 45 deg lead-in
+    below so the board snaps in from behind. Returns (hooks, reliefs): reliefs are cut from the bay frame
+    behind each tab (frame_in = the frame's inner half width) so the tab can flex out past the lip."""
+    from build123d import Box, Polyline, extrude, make_face
+    hooks = reliefs = None
+    xi = board_x / 2 + clr                              # tab's inner face
+    zb = back_z - hook                                  # tab bottom
+    pts = [(xi, front_z + 0.01), (xi + t, front_z + 0.01), (xi + t, zb), (xi - hook, back_z), (xi, back_z),
+           (xi, front_z + 0.01)]
+    prof = extrude(Plane.XZ * make_face(Polyline(*pts)), w / 2, both=True)   # profile x / z, along y
+    for s in (1, -1):
+        h = Pos(0, cy, 0) * (prof if s > 0 else prof.mirror(Plane.YZ))
+        r = Pos(s * (frame_in + relief / 2 - 0.01), cy, (zb + front_z) / 2 - 0.5) * Box(relief + 0.02, w + 0.6,
+                                                                                       front_z - zb - 1.0)
+        hooks = h if hooks is None else hooks + h
+        reliefs = r if reliefs is None else reliefs + r
+    return hooks, reliefs
+

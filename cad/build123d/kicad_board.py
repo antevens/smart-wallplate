@@ -103,3 +103,41 @@ class Board:
         ox, oy = self._to_cad(x, y, rot, 0.0, 0.0)
         ex, ey = self._to_cad(x, y, rot, lx, ly)
         return round(ex - ox, 6), round(ey - oy, 6)
+
+    def tht_pads(self, ref):
+        """[(number, x, y, radius)] of the footprint's through-hole pads in CAD coordinates."""
+        fp, x, y, rot, _ = self._place(ref)
+        out = []
+        for pad in _kids(fp, "pad"):
+            if pad[2] != "thru_hole":
+                continue
+            at, size = _first(pad, "at"), _first(pad, "size")
+            cx, cy = self._to_cad(x, y, rot, float(at[1]), float(at[2]))
+            out.append((pad[1], cx, cy, max(float(size[1]), float(size[2])) / 2))
+        return out
+
+    def is_back(self, ref):
+        return self._place(ref)[4]
+
+    def has_fab(self, ref):
+        fp = self.fps[ref]
+        layer = "B.Fab" if self.is_back(ref) else "F.Fab"
+        return any(_first(i, "layer")[1] == layer for k in ("fp_line", "fp_rect", "fp_poly") for i in _kids(fp, k))
+
+    def pad_body_gaps(self):
+        """Through-hole pads against the bodies on the other side of the board, where the pins come
+        through: [(gap, pad ref.number, body ref)], gap from the pad's edge to the body's fab outline."""
+        out = []
+        bodies = [r for r in self.fps if self.has_fab(r)]
+        for ref in self.fps:
+            for num, x, y, r in self.tht_pads(ref):
+                for body in bodies:
+                    if body == ref or self.is_back(body) == self.is_back(ref):
+                        continue
+                    x0, x1, y0, y1 = self.fab_box(body)
+                    gap = math.hypot(max(x0 - x, 0, x - x1), max(y0 - y, 0, y - y1)) - r
+                    if x0 <= x <= x1 and y0 <= y <= y1:
+                        gap = -min(x - x0, x1 - x, y - y0, y1 - y) - r
+                    out.append((gap, f"{ref}.{num}", body))
+        return out
+

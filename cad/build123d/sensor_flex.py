@@ -3,12 +3,14 @@
 Route: plug end under the MSR-2 (CN2 at the board's right end), out through the bay frame,
 up the top-right corner to just under the face skin, down the right channel, then along the
 bottom to the SHT45 bay, the SHT45 soldered on the flex tail. In the channel two Harwin
-S7081-42R spring fingers (+5 V, GND) on the flex underside press on a target board that sits on
-a shelf off the insert flange; the 5 V lead from the pass-through is soldered to that board.
+S7081-42R spring fingers (+5 V, GND) on the flex underside press on the gold pads of the 5 V
+jumper's pad end (D-31), which lies on a shelf off the insert flange.
+Above the finger section the flex widens towards the flange for the I2S microphone (D-29), on the
+flex underside, its port facing the face skin.
 Open (D-27): CN2's exact part, contact count and pin map (MEASURE).
 """
 from math import atan2, degrees, hypot
-from build123d import Box, Pos, Rot
+from build123d import Box, Cylinder, Pos, Rot
 from params import *
 
 Z_LO = STIFF_T + FLEX_T / 2                      # flex centre at the MSR-2 end
@@ -20,7 +22,7 @@ ROUTE = [(MSR_CN2_X, MSR_Y, Z_LO), (FLEX_X, MSR_Y, Z_LO),
          (SHT_ENTRY, SHT_Y, Z_HI), (0.0, SHT_Y, Z_SHT)]
 
 
-def _segment(a, b):
+def segment(a, b):
     """Flat strip FLEX_W x FLEX_T from a to b (straight run in x or in the y-z plane)."""
     dx, dy, dz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
     c = Pos((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2)
@@ -34,11 +36,20 @@ def _segment(a, b):
 
 
 def flex():
-    out = None
+    out = plug_end()
     for a, b in zip(ROUTE, ROUTE[1:]):
-        s = _segment(a, b)
-        out = s if out is None else out + s
+        out += segment(a, b)
     return out
+
+
+def plug_end():
+    """Plug end and neck taper of the flex at the wall plane (outline from params.flex_half_width)."""
+    from build123d import Polyline, extrude, make_face
+    xs = [-FLEX_PLUG[0] / 2, FLEX_PLUG[0] / 2, FLEX_PLUG[0] / 2 + FLEX_NECK_L]
+    top = [(MSR_CN2_X + x, MSR_Y + flex_half_width(x)) for x in xs]
+    bot = [(MSR_CN2_X + x, MSR_Y - flex_half_width(x)) for x in reversed(xs)]
+    face = make_face(Polyline(*top, *bot, top[0]))
+    return Pos(0, 0, Z_LO - FLEX_T / 2) * extrude(face, FLEX_T)
 
 
 def stiffeners():
@@ -46,7 +57,30 @@ def stiffeners():
     plug = Pos(MSR_CN2_X, MSR_Y, STIFF_T / 2) * Box(B2B[0] + 2.0, FLEX_W, STIFF_T)
     x0, x1, (y0, y1) = FINGER_SEC_IN, FINGER_SEC_OUT, FINGER_SEC_Y
     fingers = Pos((x0 + x1) / 2, (y0 + y1) / 2, FLEX_HI_Z + FLEX_T + STIFF_T / 2) * Box(x1 - x0, y1 - y0, STIFF_T)
-    return plug + fingers
+    return plug + fingers + mic_stiffener()
+
+
+def mic_section():
+    """Flex widened towards the flange over the microphone (D-29)."""
+    (y0, y1), x1 = MIC_SEC_Y, FLEX_X + FLEX_W / 2
+    return Pos((MIC_SEC_IN + x1) / 2, (y0 + y1) / 2, FLEX_HI_Z + FLEX_T / 2) * Box(x1 - MIC_SEC_IN, y1 - y0, FLEX_T)
+
+
+def mic_stiffener():
+    """FR4 stiffener over the microphone (skin side), port hole through flex and stiffener."""
+    w, h = MIC[0] + 1.0, MIC[1] + 1.0
+    z = FLEX_HI_Z + FLEX_T + STIFF_T / 2
+    s = Pos(MIC_X, MIC_Y, z) * Box(w, h, STIFF_T)
+    return s - Pos(*MIC_PORT, z) * Cylinder(MIC_FLEX_HOLE_D / 2, STIFF_T + 0.1)
+
+
+def mic():
+    """Microphone body under the flex and the adhesive gasket ring between stiffener and skin."""
+    body = Pos(MIC_X, MIC_Y, FLEX_HI_Z - MIC[2] / 2) * Box(*MIC)
+    z0 = FLEX_HI_Z + FLEX_T + STIFF_T
+    ring = Pos(*MIC_PORT, (z0 + SKIN_Z) / 2) * (Cylinder(MIC_GASKET_D / 2, SKIN_Z - z0)
+                                                - Cylinder(MIC_SKIN_HOLE_D / 2, SKIN_Z - z0 + 0.1))
+    return body + ring
 
 
 def finger_section():
@@ -70,7 +104,7 @@ def fingers():
 
 
 def target():
-    """Target board on the shelf: gold pads under the fingers, solder pads for the 5 V lead at the top."""
+    """The 5 V jumper's pad end on the shelf (flex on its stiffener): gold pads under the fingers."""
     x0, x1 = FLANGE_OUT[0] / 2 + 0.15, shelf_edge() - 0.15
     return Pos((x0 + x1) / 2, sum(TARGET_Y) / 2, SHELF_TOP_Z + TARGET_T / 2) * Box(x1 - x0, TARGET_Y[1] - TARGET_Y[0], TARGET_T)
 
@@ -81,7 +115,7 @@ def shelf_edge():
 
 
 def shelf():
-    """Insert shelf off the flange's right face carrying the target board. Underside: flat at
+    """Insert shelf off the flange's right face carrying the jumper's pad end. Underside: flat at
     SHELF_UNDER_Z for SHELF_OUT (the flange is solid to its outer face there; <= 3 mm prints
     unsupported), then 45 deg up to the shelf top."""
     from build123d import Polyline, Plane, extrude, make_face
@@ -89,9 +123,14 @@ def shelf():
     xf = FLANGE_OUT[0] / 2 + SHELF_OUT
     pts = [(x0, SHELF_UNDER_Z), (xf, SHELF_UNDER_Z), (shelf_edge(), SHELF_TOP_Z), (x0, SHELF_TOP_Z),
            (x0, SHELF_UNDER_Z)]
-    depth = TARGET_Y[1] - TARGET_Y[0] + 1.0
-    body = extrude(Plane.XZ * make_face(Polyline(*pts)), depth)   # profile x / z, extruded along -y
-    return Pos(0, TARGET_Y[1] + 0.5, 0) * body
+    depth = TARGET_Y[1] - TARGET_Y[0] + 1.0 + SHELF_STOP[0]
+    body = Pos(0, TARGET_Y[1] + 0.5, 0) * extrude(Plane.XZ * make_face(Polyline(*pts)), depth)   # along -y
+    # stop at the lower end: the pad end cannot slide down the wall (lower than the pad end's top: fingers clear)
+    y0 = TARGET_Y[0] - 0.5 - SHELF_STOP[0]
+    xs = shelf_edge() - 0.3
+    body += Pos((x0 + xs) / 2, y0 + SHELF_STOP[0] / 2, SHELF_TOP_Z + SHELF_STOP[1] / 2 - 0.01) * Box(
+        xs - x0, SHELF_STOP[0], SHELF_STOP[1] + 0.02)
+    return body
 
 
 def plug():
@@ -105,5 +144,6 @@ def sht45():
 
 
 def parts():
-    return {"flex": flex() + finger_section() + stiffeners(), "fingers": fingers(), "target": target(),
-            "plug": plug(), "sht45": sht45()}
+    port = Pos(*MIC_PORT, FLEX_HI_Z + FLEX_T / 2) * Cylinder(MIC_FLEX_HOLE_D / 2, FLEX_T + 0.1)
+    return {"flex": flex() + finger_section() + mic_section() + stiffeners() - port, "fingers": fingers(),
+            "target": target(), "plug": plug(), "sht45": sht45(), "mic": mic()}

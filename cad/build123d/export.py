@@ -15,6 +15,11 @@ PRINT_ORIENT = {
     "coupon_msr": lambda p: Rot(180, 0, 0) * p,
     "coupon_rocker": lambda p: p,
     "post": lambda p: Rot(90, 0, 0) * p,            # lying on its flat (flat faces -y -> down)
+    "back_cover": lambda p: p,                      # back down: as modelled (D-35)
+    "floor_na": lambda p: p,                        # flat, recess up: as modelled (D-41)
+    "cap_eu": lambda p: Rot(180, 0, 0) * p,         # face-down (barrier, D-30)
+    "trim_eu": lambda p: Rot(180, 0, 0) * p,        # face-down
+    "floor_eu": lambda p: p,                        # flat, recess up
 }
 
 
@@ -34,12 +39,17 @@ def mesh_of(part, tol=0.02):
 
 
 def parts():
-    import insert, trim, coupons, post
+    import sys
+    import insert, trim, coupons, post, backcover, floor_na
+    sys.path.insert(0, str(Path(__file__).resolve().parent / "eu"))
+    import cap_eu, trim_eu, floor_eu
     ins, tr = insert.build(), trim.build()
     return {"insert": ins, "trim": tr, "post": post.build(),
             "coupon_pocket_well": coupons.pocket_well(ins),
             "coupon_msr": coupons.msr(tr),
-            "coupon_rocker": coupons.rocker_ladder()}
+            "coupon_rocker": coupons.rocker_ladder(),
+            "back_cover": backcover.cover(), "floor_na": floor_na.parts()["floor"],
+            "cap_eu": cap_eu.build(), "trim_eu": trim_eu.build(), "floor_eu": floor_eu.parts()["floor"]}
 
 
 def main():
@@ -53,6 +63,8 @@ def main():
         export_stl(q, str(pdir / f"{name}.stl"), tolerance=0.02, angular_tolerance=0.1)
         m = trimesh.load(pdir / f"{name}.stl")
         print(f"{name:20s} {m.extents.round(1)} mm  watertight={m.is_watertight}  -> build/print/{name}.stl")
+        if not m.is_watertight or max(m.extents[:2]) > 250 or m.extents[2] > 250:
+            raise SystemExit(f"{name}: mesh not watertight or larger than the CC2 bed (256 x 256 x 256)")
 
 
 if __name__ == "__main__":

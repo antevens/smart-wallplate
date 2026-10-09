@@ -1,4 +1,4 @@
-"""TRIM PLATE - face, MSR-2 bay (radar skin), SHT45 bay, vents.
+"""TRIM PLATE - face, MSR-2 bay (radar skin), SHT45 bay, vents, microphone sound hole.
 
 Low-voltage side only: it carries no barrier duty. Any filament (PETG/ASA).
 Print: face down (the exported print STL is already flipped), no supports.
@@ -10,6 +10,12 @@ from common import rr, slab, frame
 import insert
 
 
+def msr_hooks():
+    """Snap hooks holding the MSR-2 board in its bay (D-45): at the board's short ends, from the radar skin."""
+    from common import board_hooks
+    return board_hooks(MSR_Y, MSR_BOARD[0], MSR_BACK_Z, PT - RADAR_WALL, MSR[0] / 2 + CLR, MSR_HOOK)
+
+
 def build():
     shell = slab(rr(PW, PH, PR), 0, PT)
     shell = chamfer(shell.edges().group_by(Axis.Z)[-1], FACE_CHAMFER)
@@ -18,6 +24,7 @@ def build():
     # MSR-2 and SHT45 bay frames
     body += frame(MSR[0] + 2 * CLR, MSR[1] + 2 * CLR, 1.6, 1, 0, PT, MSR_Y)
     body += frame(SHT[0] + 0.8, SHT[1] + 0.8, 1.6, 0.5, 0, PT, SHT_Y)
+    hooks, reliefs = msr_hooks()
 
     # ---------------- cuts ----------------
     # clearance envelope of the insert: island window through the face, flange underneath
@@ -39,14 +46,18 @@ def build():
     body -= Pos(0, SHT_Y, 0) * slab(rr(SHT[0] + 0.8, SHT[1] + 0.8, 0.5), -0.01, PT - SKIN)
     # sensor flex (D-27) passes the bay frames: MSR-2 frame (right wall, at the wall plane) and the
     # SHT45 frame (right wall, just under the skin)
+    nx = MSR[0] / 2 + CLR + 1.0                    # notch centre (room x), 4 mm long
+    w = 2 * flex_half_width(nx - 2.0 - MSR_CN2_X) + 0.6
+    body -= Pos(nx, MSR_Y, 0.45) * Box(4.0, w, 0.92)
     w = FLEX_W + 0.6
-    body -= Pos(MSR[0] / 2 + CLR + 1.0, MSR_Y, 0.45) * Box(4.0, w, 0.92)
     body -= Pos(SHT[0] / 2 + 0.4 + 0.8, SHT_Y, (SKIN_Z + 9.4) / 2) * Box(3.0, w, SKIN_Z - 9.4 + 0.01)
     # side wall thinned on the inside over the flex's finger section (track lanes beside the pads)
     ry0, ry1 = FINGER_LANE_Y[0] - 0.5, FINGER_LANE_Y[1] + 0.5
     rz0 = FLEX_HI_Z - 0.5
     body -= Pos(PW / 2 - SKIN + TRIM_WALL_RECESS / 2, (ry0 + ry1) / 2, (rz0 + SKIN_Z) / 2) * Box(
         TRIM_WALL_RECESS, ry1 - ry0, SKIN_Z - rz0 + 0.01)
+    body -= Pos(*MIC_PORT, PT - SKIN / 2) * Cylinder(MIC_SKIN_HOLE_D / 2, SKIN + 1)   # microphone sound hole (D-29)
+    body = body - reliefs + hooks                       # MSR-2 snap hooks (D-45)
     for i in (-1, 0, 1):  # SHT vents: face + bottom edge
         body -= Pos(i * 4, SHT_Y, PT - 1) * Box(2, 6, 4)
         body -= Pos(i * 4, -PH / 2 + 4, 5) * Box(2, 10, 6)
