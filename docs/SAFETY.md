@@ -12,8 +12,11 @@ hard requirement.
    to question.
 3. Mains-side parts must carry recognised marks: rocker (CSA/cUL; ENEC for EU/UK),
    IRM-03-5 (cURus/CB/TÜV), terminal block, fuse, MOV.
-4. The 5 V lead runs from inside the box to the plate: use wire insulated for at
-   least the mains voltage (e.g. 300 V-rated), through the single collar hole.
+4. The 5 V flex jumper runs from inside the box to the plate, through the single
+   collar hole. It is not a rated wire: polyimide base and coverlay, copper exposed
+   only at its two ends (J2 on the board's 5 V side, the pads on the shelf outside
+   the box). Its distance to mains-side parts along its route, and whether the
+   film is sufficient insulation where it passes them, are open for human review.
 5. Bond grounds per local code. The printed plate is non-conductive and is not grounded.
 6. Box fill must be calculated with the insert, the rocker body and the wiring board
    (terminal block, PSU) counted.
