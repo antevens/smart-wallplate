@@ -1,0 +1,4 @@
+(version 1)
+# Back cover flex (low voltage only): single-layer polyimide flex.
+(rule "Flex edge clearance"
+    (constraint edge_clearance (min 0.2mm)))

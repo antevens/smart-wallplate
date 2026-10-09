@@ -1,0 +1,4 @@
+(sym_lib_table
+	(version 7)
+	(lib (name "sensor")(type "KiCad")(uri "${KIPRJMOD}/sensor.kicad_sym")(options "")(descr "Sensor flex and power jumper symbols"))
+)
