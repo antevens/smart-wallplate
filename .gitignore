@@ -8,3 +8,4 @@ _autosave-*
 *.lck
 .venv/
 .tools/
+scratch/
