@@ -1,0 +1,15 @@
+{
+  "type": "process",
+  "name": "smart-wallplate backcover_PETG",
+  "inherits": "0.20mm Strength @Elegoo CC2 0.4 nozzle",
+  "from": "User",
+  "instantiation": "true",
+  "wall_loops": "3",
+  "top_shell_layers": "4",
+  "bottom_shell_layers": "2",
+  "sparse_infill_density": "30%",
+  "sparse_infill_pattern": "gyroid",
+  "enable_support": "0",
+  "brim_type": "no_brim",
+  "seam_position": "back"
+}
