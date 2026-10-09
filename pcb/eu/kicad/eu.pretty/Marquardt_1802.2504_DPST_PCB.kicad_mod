@@ -1,0 +1,85 @@
+(footprint "Marquardt_1802.2504_DPST_PCB"
+	(version 20241229)
+	(generator "gen_libs")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "Rocker switch DPST, PCB pins 0.8 mm, holes 1.3 mm on 10.2 x 7 mm grid (1 / 2 on the body centre line), body 22x18.6 mm, flange 24x21 mm, PCB seat 16.2 mm below the panel face; Marquardt drawing 1802.2504 rev g, 2003-09-16 (K-drawing 18022504.03)")
+	(tags "rocker switch DPST Marquardt 1800")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "Marquardt_1802.2504_DPST_PCB"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(pad "1" thru_hole circle
+		(at -5.1 0)
+		(size 2.4 2.4)
+		(drill 1.4)
+		(layers "*.Cu" "*.Mask")
+	)
+	(pad "1a" thru_hole circle
+		(at -5.1 -7)
+		(size 2.4 2.4)
+		(drill 1.4)
+		(layers "*.Cu" "*.Mask")
+	)
+	(pad "2" thru_hole circle
+		(at 5.1 0)
+		(size 2.4 2.4)
+		(drill 1.4)
+		(layers "*.Cu" "*.Mask")
+	)
+	(pad "2a" thru_hole circle
+		(at 5.1 -7)
+		(size 2.4 2.4)
+		(drill 1.4)
+		(layers "*.Cu" "*.Mask")
+	)
+	(fp_rect
+		(start -11 -9.3)
+		(end 11 9.3)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+	)
+	(fp_rect
+		(start -12.25 -10.55)
+		(end 12.25 10.55)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+	)
+	(model "${KIPRJMOD}/3d/Marquardt_1802.2504.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+	(embedded_fonts no)
+)

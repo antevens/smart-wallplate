@@ -1,0 +1,81 @@
+(footprint "Varistor_TDK_CU4032"
+	(version 20241229)
+	(generator "gen_libs")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "TDK SMD disk varistor CU4032 (10.2x8.0x4.5 mm), pads per datasheet https://www.farnell.com/datasheets/2921094.pdf (A 3.5, B 2.8, C 6.5 mm)")
+	(tags "varistor SIOV CU4032")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "Varistor_TDK_CU4032"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(pad "1" smd rect
+		(at -4.65 0)
+		(size 2.8 3.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+	)
+	(pad "2" smd rect
+		(at 4.65 0)
+		(size 2.8 3.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+	)
+	(fp_rect
+		(start -5.1 -4)
+		(end 5.1 4)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+	)
+	(fp_rect
+		(start -5.6 -4.5)
+		(end 5.6 4.5)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+	)
+	(fp_rect
+		(start -6.3 -4.3)
+		(end 6.3 4.3)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+	)
+	(model "${KIPRJMOD}/3d/Varistor_TDK_CU4032.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+	(embedded_fonts no)
+)

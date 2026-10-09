@@ -1,0 +1,4 @@
+(version 1)
+# 5 V board (no mains): fab limits only.
+(rule "Board edge clearance"
+    (constraint edge_clearance (min 0.5mm)))

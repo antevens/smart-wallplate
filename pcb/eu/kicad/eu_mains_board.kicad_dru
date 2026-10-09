@@ -1,0 +1,38 @@
+(version 1)
+# Spacing design TARGETS for the EU mains board (docs/DESIGN.md D-30, D-36; AGENTS.md hard constraint 3):
+# 270 V working, overvoltage category III, pollution degree 2, stricter of IEC 60664-1 / EN 62368-1.
+# Not a compliance claim: human review required.
+
+(rule "Board edge clearance"
+    (constraint edge_clearance (min 0.5mm)))
+
+(rule "Mains copper to board edge >= 1.0 mm"
+    (condition "(A.NetClass == 'Mains_L' || A.NetClass == 'Mains_N')")
+    (constraint edge_clearance (min 1.0mm)))
+
+(rule "Mains copper to mounting holes >= 1.0 mm"
+    (condition "(A.NetClass == 'Mains_L' || A.NetClass == 'Mains_N') && B.Type == 'Hole'")
+    (constraint hole_clearance (min 1.0mm)))
+
+(rule "L-N clearance >= 3.5 mm"
+    (condition "A.NetClass == 'Mains_L' && B.NetClass == 'Mains_N'")
+    (constraint clearance (min 3.5mm)))
+
+(rule "Different mains nets >= 3.5 mm (line / switched line / fused line, neutral / switched neutral)"
+    (condition "(A.NetClass == 'Mains_L' || A.NetClass == 'Mains_N') && (B.NetClass == 'Mains_L' || B.NetClass == 'Mains_N') && A.NetName != B.NetName")
+    (constraint clearance (min 3.5mm)))
+
+(rule "Mains to 5 V side >= 8.0 mm (reinforced)"
+    (condition "(A.NetClass == 'Mains_L' || A.NetClass == 'Mains_N') && B.NetClass == 'SELV'")
+    (constraint clearance (min 8.0mm))
+    (constraint creepage (min 8.0mm)))
+
+(rule "Mains to the PSU's NC pin (DC end) >= 8.0 mm"
+    (condition "(A.NetClass == 'Mains_L' || A.NetClass == 'Mains_N') && B.NetName == 'unconnected-(PS1-NC-Pad3)'")
+    (constraint clearance (min 8.0mm)))
+
+# Exception (AGENTS.md hard constraint 3): pins of one rated part keep the part's own spacing
+# (TMPS 03 3 kVAC reinforced, WAGO 2604 400 V III/2, Marquardt 1802.2504, UMT 250 fuse, CU4032 varistor).
+(rule "Pins of one rated part"
+    (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.Parent.Reference == B.Parent.Reference")
+    (constraint clearance (min 0.2mm)))
