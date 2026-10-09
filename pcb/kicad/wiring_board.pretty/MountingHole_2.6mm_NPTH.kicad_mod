@@ -3,7 +3,7 @@
 	(generator "gen_libs")
 	(generator_version "9.0")
 	(layer "F.Cu")
-	(descr "Mounting hole 2.6 mm for the insert's snap posts, unplated (docs/DESIGN.md D-28)")
+	(descr "Mounting hole 2.6 mm for the insert's snap posts, unplated, no copper (docs/DESIGN.md D-28)")
 	(tags "mounting hole snap post")
 	(property "Reference" "REF**"
 		(at 0 0 0)
@@ -44,7 +44,7 @@
 	)
 	(fp_circle
 		(center 0 0)
-		(end 2.05 0)
+		(end 1.85 0)
 		(stroke
 			(width 0.05)
 			(type solid)

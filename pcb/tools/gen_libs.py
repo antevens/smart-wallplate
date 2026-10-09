@@ -10,9 +10,9 @@ import shutil
 import sys
 from pathlib import Path
 from sexpr import loads, dumps, find, first, Sym, S
-from parts import (LIB, FP_ROCKER, FP_WAGO, FP_IRM, FP_FUSE, FP_MOV, FP_J2, FP_C1, FP_MH_PE, FP_MH, FP_ANT, FP_KICAD,
+from parts import (LIB, FP_ROCKER, FP_WAGO, FP_IRM, FP_FUSE, FP_MOV, FP_J2, FP_C1, FP_MH, FP_ANT, FP_KICAD,
                    ANT_LOGO_H,
-                   MOUNT_D, MOUNT_PAD, POST_SHOULDER_D, POST_HEAD_D, ROCKER_DS, WAGO_DS, CU_DS, BOARD, PS1_PINS)
+                   MOUNT_D, POST_SHOULDER_D, POST_HEAD_D, WAGO_PAD, WAGO_ROW_PITCH, WAGO_BODY, ROCKER_DS, WAGO_DS, CU_DS, BOARD, PS1_PINS)
 
 _BASES = ["/usr/share/kicad", "/usr/local/share/kicad", "/opt/kicad/share/kicad",
           "/var/lib/flatpak/app/org.kicad.KiCad/current/active/files/share/kicad",
@@ -44,7 +44,7 @@ SYMBOLS = [
     ("Device", "Varistor", "Varistor"),
     ("Device", "C", "C"),
     ("Connector", "Screw_Terminal_01x06", "Screw_Terminal_01x06"),
-    ("Connector_Generic", "Conn_01x02", "Conn_01x02"),
+    ("Connector_Generic", "Conn_01x06", "Conn_01x06"),
     ("Switch", "SW_DPST", "SW_DPST_Marquardt"),
     ("power", "+5V", "+5V"),
     ("power", "GND", "GND"),
@@ -53,7 +53,7 @@ SYMBOLS = [
 STOCK_FP = {
     FP_IRM: ("Converter_ACDC", FP_IRM),
     FP_FUSE: ("Fuse", FP_FUSE),
-    FP_J2: ("Connector_JST", FP_J2),
+    FP_J2: ("Connector_FFC-FPC", FP_J2),
     FP_C1: ("Capacitor_SMD", FP_C1),
     FP_KICAD: ("Symbol", FP_KICAD),
 }
@@ -135,6 +135,11 @@ def rect(x0, y0, x1, y1, layer, w):
              S("stroke", S("width", w), S("type", Sym("solid"))), S("fill", Sym("no")), S("layer", layer))
 
 
+def line(x0, y0, x1, y1, layer, w):
+    return S("fp_line", S("start", x0, y0), S("end", x1, y1), S("stroke", S("width", w), S("type", Sym("solid"))),
+             S("layer", layer))
+
+
 def tht(num, x, y, shape, sx, sy, drill):
     return S("pad", num, Sym("thru_hole"), Sym(shape), S("at", x, y), S("size", sx, sy),
              S("drill", drill), S("layers", "*.Cu", "*.Mask"))
@@ -154,39 +159,41 @@ def body(w, h, cx=0.0, cy=0.0, crt=0.25, silk=True):
 
 
 def fp_rocker():
-    # Marquardt drawing 1802.2504 rev g (recommended hole layout), mounted turned 90 degrees:
-    # poles 10.2 mm apart along x (pole 1 = 1/1a at -x, pole 2 = 2/2a at +x), in/switched 7 mm
-    # apart along y (1, 2 at +y; 1a, 2a at -y); holes 1.3 (+0.1) mm, pins 0.8 mm; body below the
-    # panel 22 x 18.6 mm. Pin numbering per the DPST schematic: confirm on a sample.
-    items = [tht("1", -5.1, 3.5, "circle", 2.4, 2.4, 1.4), tht("1a", -5.1, -3.5, "circle", 2.4, 2.4, 1.4),
-             tht("2", 5.1, 3.5, "circle", 2.4, 2.4, 1.4), tht("2a", 5.1, -3.5, "circle", 2.4, 2.4, 1.4)]
-    items += body(22.0, 18.6, silk=False)
+    # Marquardt drawing 1802.2504 rev g (recommended hole layout), mounted turned 90 degrees; origin =
+    # body centre: poles 10.2 mm apart along x (pole 1 = 1/1a at -x, pole 2 = 2/2a at +x), pins 1 / 2
+    # on the body's centre line, 1a / 2a 7 mm off it (-y); holes 1.3 (+0.1) mm, pins 0.8 mm; body
+    # below the panel 22 x 18.6 mm. Pin numbering per the DPST schematic: confirm on a sample.
+    items = [tht("1", -5.1, 0.0, "circle", 2.4, 2.4, 1.4), tht("1a", -5.1, -7.0, "circle", 2.4, 2.4, 1.4),
+             tht("2", 5.1, 0.0, "circle", 2.4, 2.4, 1.4), tht("2a", 5.1, -7.0, "circle", 2.4, 2.4, 1.4)]
+    items += body(22.0, 18.6, crt=1.25, silk=False)       # courtyard round the 24 x 21 flange (overhangs at the panel)
     items.append(S("model", "${KIPRJMOD}/3d/Marquardt_1802.2504.step",
                    S("offset", S("xyz", 0, 0, 0)), S("scale", S("xyz", 1, 1, 1)), S("rotate", S("xyz", 0, 0, 0))))
-    return _fp(FP_ROCKER, f"Rocker switch DPST, PCB pins 0.8 mm, holes 1.3 mm on 10.2 x 7 mm grid, "
+    return _fp(FP_ROCKER, f"Rocker switch DPST, PCB pins 0.8 mm, holes 1.3 mm on 10.2 x 7 mm grid (1 / 2 on the body centre line), "
                f"body 22x18.6 mm, flange 24x21 mm, PCB seat 16.2 mm below the panel face; {ROCKER_DS}",
                "rocker switch DPST Marquardt 1800",
                "through_hole", items)
 
 
 def fp_wago():
-    # WAGO 2604-1106 (datasheet page): 6-pole, pitch 5 mm, 2 solder pins per potential,
-    # pins 0.8 x 1 mm, drilled hole 1.3 (+0.1) mm, L = (poles - 1) x 5 + 7.4 = 32.4 mm, depth 19.2 mm.
-    # Pin rows at y 0 and -5 and the body offset follow the 2601 series footprint (same family);
-    # NOT confirmed against the 2604 dimension drawing.
+    # WAGO 2604-1106 (datasheet page; pin rows and body from WAGO's 3D model): 6-pole, pitch 5 mm,
+    # 2 solder pins per potential in rows WAGO_ROW_PITCH apart (pins 0.8 x 1 mm, drilled hole
+    # 1.3 (+0.1) mm); the second row lies behind the first, away from the entries. Fab outline = the
+    # body at the board; the courtyard also covers the levers, which overhang the entry side up top.
+    front, back, lever = WAGO_BODY
     items = []
     for i in range(6):
         x = i * 5.0 - 12.5
-        for y in (0.0, -5.0):
-            shape = "rect" if i == 0 and y == 0.0 else "oval"
-            items.append(tht(str(i + 1), x, y, shape, 1.8, 2.6, 1.3))
-    items += body(32.4, 19.2, cy=(-12.17 + 7.03) / 2)
+        for y in (0.0, WAGO_ROW_PITCH):
+            shape = "rect" if i == 0 and y == 0.0 else "circle"
+            items.append(tht(str(i + 1), x, y, shape, *WAGO_PAD, 1.3))
+    items += [rect(-16.2, -front, 16.2, back, "F.Fab", 0.1),
+              rect(-16.32, -front - 0.12, 16.32, back + 0.12, "F.SilkS", 0.12),
+              rect(-16.45, -lever - 0.25, 16.45, back + 0.25, "F.CrtYd", 0.05)]
     items.append(S("model", "${KIPRJMOD}/3d/WAGO_2604-1106.step",
                    S("offset", S("xyz", 0, 0, 0)), S("scale", S("xyz", 1, 1, 1)), S("rotate", S("xyz", 0, 0, 0))))
     return _fp(FP_WAGO, f"WAGO 2604-1106 PCB terminal block, push-in lever, 6-pole, P5.00 mm, 4 mm2, "
-               f"entry parallel to PCB (entry side -y), 400 V III/2, {WAGO_DS}; pin rows inferred from "
-               "the 2601 series, confirm with the WAGO drawing", "WAGO 2604 terminal block push-in",
-               "through_hole", items)
+               f"entry parallel to PCB (entry side -y), 400 V III/2, {WAGO_DS}; pin rows {WAGO_ROW_PITCH} mm apart "
+               "and body from WAGO's 3D model", "WAGO 2604 terminal block push-in", "through_hole", items)
 
 
 def fp_ant_logo():
@@ -207,25 +214,36 @@ def fp_ant_logo():
                "board_only exclude_from_pos_files exclude_from_bom allow_missing_courtyard", items)
 
 
-def fp_mount(plated):
-    """Hole for one of the insert's snap posts: plated with a copper ring (net assigned on the
-    board), or unplated. The post's shoulder (front) and snap head (back) sit on the ring."""
+def fp_mount():
+    """Unplated hole for one of the insert's snap posts, with no copper: the post's shoulder
+    (front) and snap head (back) bear on bare laminate. The board keeps copper MOUNT_KO away."""
     circ = lambda layer, r, w: S("fp_circle", S("center", 0, 0), S("end", r, 0),
                                  S("stroke", S("width", w), S("type", Sym("solid"))), S("fill", Sym("no")),
                                  S("layer", layer))
-    if plated:
-        items = [tht("1", 0, 0, "circle", MOUNT_PAD, MOUNT_PAD, MOUNT_D)]
-        name, kind = FP_MH_PE, "plated, copper ring"
-    else:
-        items = [S("pad", "", Sym("np_thru_hole"), Sym("circle"), S("at", 0, 0), S("size", MOUNT_D, MOUNT_D),
-                   S("drill", MOUNT_D), S("layers", "*.Cu", "*.Mask"))]
-        name, kind = FP_MH, "unplated"
-    # courtyards: the post's shoulder on the front, the ring or snap head on the back
+    items = [S("pad", "", Sym("np_thru_hole"), Sym("circle"), S("at", 0, 0), S("size", MOUNT_D, MOUNT_D),
+               S("drill", MOUNT_D), S("layers", "*.Cu", "*.Mask"))]
     items += [circ("F.CrtYd", POST_SHOULDER_D / 2 + 0.25, 0.05),
-              circ("B.CrtYd", max(MOUNT_PAD, POST_HEAD_D) / 2 + 0.25, 0.05),
+              circ("B.CrtYd", POST_HEAD_D / 2 + 0.25, 0.05),
               circ("F.Fab", POST_SHOULDER_D / 2, 0.1)]
-    return _fp(name, f"Mounting hole {MOUNT_D} mm for the insert's snap posts, {kind} (docs/DESIGN.md D-28)",
-               "mounting hole snap post", "through_hole board_only exclude_from_pos_files exclude_from_bom", items)
+    return _fp(FP_MH, f"Mounting hole {MOUNT_D} mm for the insert's snap posts, unplated, no copper "
+               "(docs/DESIGN.md D-28)", "mounting hole snap post",
+               "through_hole board_only exclude_from_pos_files exclude_from_bom", items)
+
+
+def model3d(name):
+    """3D model from the project's kicad/3d (pcb/tools/gen_3d.py), already in footprint coordinates."""
+    return S("model", f"${{KIPRJMOD}}/3d/{name}.step", S("offset", S("xyz", 0, 0, 0)),
+             S("scale", S("xyz", 1, 1, 1)), S("rotate", S("xyz", 0, 0, 0)))
+
+
+def localize_models(fp, prj):
+    """Point a copied stock footprint's 3D model at the project's kicad/3d when gen_3d.py made one
+    of that name (the stock library lacks it)."""
+    for m in find(fp, "model"):
+        stem = Path(m[1]).stem
+        if (Path(prj) / "3d" / f"{stem}.step").exists():
+            m[1] = f"${{KIPRJMOD}}/3d/{stem}.step"
+    return fp
 
 
 def fp_mov():
@@ -236,6 +254,7 @@ def fp_mov():
     items = [smd("1", -pitch / 2, 0, 2.8, 3.5), smd("2", pitch / 2, 0, 2.8, 3.5)]
     items += body(10.2, 8.0, crt=0.5, silk=False)
     items += [rect(-6.3, -4.3, 6.3, 4.3, "F.SilkS", 0.12)]
+    items.append(model3d(FP_MOV))
     return _fp(FP_MOV, f"TDK SMD disk varistor CU4032 (10.2x8.0x4.5 mm), pads per datasheet {CU_DS} "
                "(A 3.5, B 2.8, C 6.5 mm)", "varistor SIOV CU4032", "smd", items)
 
@@ -252,8 +271,9 @@ def build_footprints():
             trim_irm_silk(fp)
         if new == FP_KICAD:                 # no schematic symbol: keep it out of the parity check
             first(fp, "attr").insert(1, Sym("board_only"))
+        localize_models(fp, PRJ)
         (d / f"{new}.kicad_mod").write_text(dumps(fp) + "\n")
-    for fp in (fp_rocker(), fp_wago(), fp_mov(), fp_mount(True), fp_mount(False), fp_ant_logo()):
+    for fp in (fp_rocker(), fp_wago(), fp_mov(), fp_mount(), fp_ant_logo()):
         (d / f"{fp[1]}.kicad_mod").write_text(dumps(fp) + "\n")
 
 

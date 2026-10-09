@@ -8,7 +8,7 @@ import math
 from pathlib import Path
 import pcbnew as P
 from parts import (VIAS, PARTS, LIB, PROJECT, uid, BOARD, PS1_PINS, NETCLASS, RING_OUTER, RING_INNER,
-                   SELV_ZONE, POURS, TRACKS, REV, MOUNT, MOUNT_PAD, FP_MH_PE, FP_MH, LOGOS, URL, URL_POS)
+                   SELV_ZONE, POURS, POUR_PRIO, PE_ARMS, TRACKS, REV, MOUNT, MOUNT_KO, PE_DETOURS, PE_DETOUR_W, FP_MH, LOGOS, URL, URL_POS)
 
 PRJ = Path(__file__).resolve().parents[1] / "kicad"
 OX, OY = 100.0, 100.0
@@ -172,20 +172,16 @@ for ref, (name, (x, y), side, rot) in LOGOS.items():
         fp.Flip(fp.GetPosition(), P.FLIP_DIRECTION_LEFT_RIGHT)
     fps[ref] = fp
 
-# mounting holes for the insert's snap posts (board-only footprints, no symbol)
-for ref, ((x, y), net) in MOUNT.items():
-    name = FP_MH_PE if net else FP_MH
-    fp = P.FootprintLoad(lib_path, name)
-    fp.SetFPID(P.LIB_ID(LIB, name))
+# mounting holes for the insert's snap posts (board-only footprints, no symbol): unplated
+for ref, (x, y) in MOUNT.items():
+    fp = P.FootprintLoad(lib_path, FP_MH)
+    fp.SetFPID(P.LIB_ID(LIB, FP_MH))
     fp.SetReference(ref)
-    fp.SetValue(name)
+    fp.SetValue(FP_MH)
     fp.SetPosition(V(x, y))
     fp.Reference().SetLayer(P.F_Fab)
     fp.Value().SetVisible(False)
     board.Add(fp)
-    for pad in fp.Pads():
-        if net:
-            pad.SetNet(nets[net])
     fps[ref] = fp
 
 # J1 pin positions as built (front view) for the README / checks
@@ -226,10 +222,45 @@ def zone(net, layers, outline, hole=None, prio=0, connection=P.ZONE_CONNECTION_F
     return z
 
 
+def circle_pts(c, r, a0=0.0, a1=360.0, n=48):
+    return [(c[0] + r * math.cos(math.radians(a0 + (a1 - a0) * k / n)),
+             c[1] + r * math.sin(math.radians(a0 + (a1 - a0) * k / n))) for k in range(n + 1)]
+
+
+def keepout(c, r, name):
+    """Rule area on both copper layers: no copper of any kind round a mounting hole."""
+    z = P.ZONE(board)
+    ls = P.LSET()
+    ls.AddLayer(P.F_Cu)
+    ls.AddLayer(P.B_Cu)
+    z.SetLayerSet(ls)
+    z.SetIsRuleArea(True)
+    z.SetDoNotAllowCopperPour(True)
+    z.SetDoNotAllowTracks(True)
+    z.SetDoNotAllowVias(True)
+    z.SetDoNotAllowPads(False)                 # the hole itself is an NPTH pad
+    z.SetDoNotAllowFootprints(False)
+    z.SetZoneName(name)
+    o = z.Outline()
+    o.NewOutline()
+    for pt in circle_pts(c, r)[:-1]:
+        o.Append(V(*pt))
+    board.Add(z)
+
+
 zone("PE", ["F.Cu", "B.Cu"], RING_OUTER, RING_INNER, prio=5, name="PE ring (AC part)")
+for lay, outline in PE_ARMS:
+    zone("PE", [lay], outline, prio=6, name=f"PE arm {lay}")   # overlaps the ring: own priority
+for ref, (a0, a1) in PE_DETOURS.items():                     # ring detours round MH1, MH3 (inside)
+    c = MOUNT[ref]
+    outer = circle_pts(c, MOUNT_KO + PE_DETOUR_W, a0, a1, 24)
+    inner = circle_pts(c, MOUNT_KO - 0.1, a1, a0, 24)
+    zone("PE", ["F.Cu", "B.Cu"], outer + inner, prio=6, name=f"PE detour {ref}")
+for ref, c in MOUNT.items():
+    keepout(c, MOUNT_KO, f"no copper under the {ref} post")
 zone("GND", ["F.Cu"], SELV_ZONE, prio=4, connection=P.ZONE_CONNECTION_THERMAL, name="5 V side")
-for i, (net, lay, outline) in enumerate(POURS):
-    zone(net, [lay], outline, prio=3, name=f"{net} pour")
+for net, lay, outline in POURS:
+    zone(net, [lay], outline, prio=POUR_PRIO[net], name=f"{net} pour")
 
 
 # ---------------- PE stitching vias along the ring centre line ----------------
@@ -245,8 +276,8 @@ for a, b in zip(pts, pts[1:]):
     for i in range(n):
         t = i / n
         x, y = a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t
-        if any(math.hypot(x - mx, y - my) < MOUNT_PAD / 2 + 0.4 + 0.5 for (mx, my), _ in MOUNT.values()):
-            continue                      # leave room for the mounting holes
+        if any(math.hypot(x - mx, y - my) < MOUNT_KO + 0.4 + 0.2 for mx, my in MOUNT.values()):
+            continue                      # no vias in the keep-out round the mounting holes
         v = P.PCB_VIA(board)
         v.SetPosition(V(x, y))
         v.SetWidth(P.FromMM(0.8))
@@ -335,18 +366,22 @@ def text(s, x, y, lay="F.SilkS", size=1.0, th=0.15):
     board.Add(t)
 
 
-# back face (installer side): terminal labels just below the block body (body ends at Y -6.1)
+# back face (installer side): terminal labels just below the block body (body ends at Y -3.0)
 for num, label in (("1", "PE"), ("2", "N SW"), ("3", "N IN"), ("4", "L SW"), ("5", "L IN"), ("6", "PE")):
     x = [mm(q.GetPosition())[0] for q in fps["J1"].Pads() if q.GetNumber() == num][0]
     text(label, x, -7.0, "B.SilkS", 0.8, 0.12)
-text("MAINS 270 VAC MAX", -9.0, 27.5, "B.SilkS", 1.0)
-text("LIGHTS: L SW / N SW", -9.0, 25.5, "B.SilkS", 0.8, 0.12)
-text(f"wiring_board {REV}", -9.0, 30.0, "B.SilkS", 1.0)
+text("MAINS 270 VAC MAX", -9.0, 29.2, "B.SilkS", 1.0)
+text("LOAD: L SW / N SW", 0.0, 16.2, "B.SilkS", 0.8, 0.12)
+text(f"wiring_board {REV}", -9.0, 31.0, "B.SilkS", 1.0)
 # front face
-text("F1 T1A 250V", -14.0, -30.9, "F.SilkS", 0.8, 0.12)
 text("+5V  GND", 12.7, -32.7, "F.SilkS", 0.8, 0.12)
 text(DATE, 11.0, 27.5, "B.SilkS", 0.8, 0.12)
 text(URL, URL_POS[0], URL_POS[1], f"{URL_POS[2]}.SilkS", 0.8, 0.12)
+
+# part labels: reference + maker / model on each part's side (pcb/tools/kigen.py)
+import kigen
+kigen.place_labels(board, [(fps[r], t) for r, t in ((r, kigen.label_text(r, p)) for r, p in PARTS.items())
+                           if t and r in fps])
 
 # ---------------- fill and save ----------------
 out = PRJ / f"{PROJECT}.kicad_pcb"
@@ -358,6 +393,38 @@ filled.BuildConnectivity()
 P.ZONE_FILLER(filled).Fill(filled.Zones())
 P.SaveBoard(str(out), filled)
 print("wrote", out)
+
+
+def pe_continuous(brd, layer):
+    """PE copper on one layer alone (zones, tracks, the terminal's THT pads; no vias, no hole
+    copper): do all PE pins of J1 (J1.1 and J1.6, both rows) lie in one piece?"""
+    u = P.SHAPE_POLY_SET()
+    for z in brd.Zones():
+        if not z.GetIsRuleArea() and z.GetNetname() == NETNAME["PE"] and z.IsOnLayer(layer):
+            u.BooleanAdd(z.GetFilledPolysList(layer))
+    for t in brd.GetTracks():
+        if t.GetNetname() == NETNAME["PE"] and t.GetClass() != "PCB_VIA" and t.GetLayer() == layer:
+            sh = P.SHAPE_POLY_SET()
+            t.TransformShapeToPolygon(sh, layer, 0, P.FromMM(0.005), P.ERROR_INSIDE)
+            u.BooleanAdd(sh)
+    term = [pd for fp in brd.GetFootprints() if fp.GetReference() == "J1" for pd in fp.Pads()
+            if pd.GetNetname() == NETNAME["PE"]]
+    for pd in term:
+        sh = P.SHAPE_POLY_SET()
+        pd.TransformShapeToPolygon(sh, layer, 0, P.FromMM(0.005), P.ERROR_INSIDE)
+        u.BooleanAdd(sh)
+    u.Simplify()
+    where = [{i for i in range(u.OutlineCount()) if u.Outline(i).PointInside(pd.GetPosition())} for pd in term]
+    nums = {pd.GetNumber() for pd in term}
+    return nums == {"1", "6"} and bool(set.intersection(*where))      # every PE pin (both rows) in one piece
+
+
+ok_f = pe_continuous(filled, P.F_Cu)
+print("PE J1.1 - J1.6 on F.Cu alone (no vias, no hole copper):", "continuous" if ok_f else "BROKEN")
+print("PE J1.1 - J1.6 on B.Cu alone (parallel ring, joined to J1.6 by the vias):",
+      "continuous" if pe_continuous(filled, P.B_Cu) else "not continuous")
+if not ok_f:
+    raise SystemExit("PE continuity on F.Cu must not depend on vias or mounting-hole copper")
 print("J1 pads (num, X, Y):", J1_PADS)
 for n in ("1", "3", "5", "14", "16"):
     print(f"PS1.{n} at", tuple(round(c, 2) for c in pad_xy(fps["PS1"], n)))

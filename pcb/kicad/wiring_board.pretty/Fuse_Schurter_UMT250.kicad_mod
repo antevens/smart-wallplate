@@ -240,7 +240,7 @@
 		(uuid "f500aa01-4a50-41a6-8990-0021bbdb7f5d")
 	)
 	(embedded_fonts no)
-	(model "${KICAD9_3DMODEL_DIR}/Fuse.3dshapes/Fuse_Schurter_UMT250.step"
+	(model "${KIPRJMOD}/3d/Fuse_Schurter_UMT250.step"
 		(offset
 			(xyz 0 0 0)
 		)

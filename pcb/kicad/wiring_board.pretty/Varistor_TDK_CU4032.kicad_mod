@@ -66,5 +66,16 @@
 		(fill no)
 		(layer "F.SilkS")
 	)
+	(model "${KIPRJMOD}/3d/Varistor_TDK_CU4032.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
 	(embedded_fonts no)
 )

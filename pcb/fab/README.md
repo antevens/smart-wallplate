@@ -22,7 +22,7 @@ before ordering. Spacing values are design targets, not a compliance claim.
 - **The outline has a 5 mm routed slot** from the bottom edge up under PS1. It is part of
   Edge.Cuts, not a drill. Add "routed isolation slot in outline, do not omit" to the order
   remarks.
-- Four 2.6 mm mounting holes: three plated (PE ring), one unplated (NPTH drill file).
+- Four 2.6 mm mounting holes, all unplated (NPTH drill file), with no copper under the posts.
 - No castellations, impedance control or V-cut.
 
 ## Assembly
@@ -44,10 +44,9 @@ before ordering. Spacing values are design targets, not a compliance claim.
 - [ ] Isolation targets in `../kicad/wiring_board.kicad_dru` (D-24: L–N, L in to switched
       L, mains to PE ≥ 3.5 mm; mains to 5 V ≥ 8.0 mm plus the slot) reviewed against IEC
       60664-1 / 62368-1 and UL/CSA 62368-1.
-- [ ] Thermal review of the 15 A paths (narrowest about 2.4–2.9 mm near J1); choose the
-      copper weight.
-- [ ] J1 pin rows checked against the WAGO 2604 dimension drawing (currently inferred from
-      the 2601 series).
+- [ ] Thermal review of the 15 A paths (narrowest 1.3–1.8 mm between J1's pads, D-37); choose
+      the copper weight.
+- [ ] J1 pin rows (8.2 mm apart, from WAGO's 3D model, D-37) checked on a part.
 - [ ] S1 pin numbering checked with a meter on a sample (D-26).
 - [ ] Approvals of S1, J1, F1 and RV1 adequate for the BC homeowner permit and inspector.
 - [ ] Gerbers opened in a viewer (PCBWay's online viewer is fine): the slot is present.

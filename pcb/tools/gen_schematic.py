@@ -100,7 +100,7 @@ for i, net in enumerate(["L_F", "N_SW"]):
     label(net, (xy[0], xy[1], 180.0))
 
 note("Wiring board for the smart wall plate (docs/DESIGN.md D-24, D-25; pcb/README.md).\n"
-     "J1 takes the house wiring: L, N, PE in and switched L, N, PE out to the lights.\n"
+     "J1 takes the house wiring: L, N, PE in and switched L, N, PE out to the load.\n"
      "S1 (Marquardt 1802.2504) switches line and neutral; the PSU is fed after the switch through F1.\n"
      "F1 rating T1A is a designer's choice (Mean Well gives none): HUMAN REVIEW. F1 breaking capacity 200 A.\n"
      "Spacing targets (not a compliance claim): L-N, L in-L sw, N in-N sw, mains-PE >= 3.5 mm;\n"
